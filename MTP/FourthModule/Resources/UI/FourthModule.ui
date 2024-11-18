@@ -17,15 +17,63 @@
       <string>Segmentation</string>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
-      <item row="1" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Inputs</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Trk Path</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="ctkPathLineEdit" name="trkPath_Segmentation"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QPushButton" name="segmentationButton_Segmentation">
+        <property name="text">
+         <string>Segment</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Location to save Trks</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="ctkPathLineEdit" name="segmentedTrkFolderPath_Segmentation">
+        <property name="filters">
+         <set>ctkPathLineEdit::Dirs</set>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="visualizeTrks_Segmentation">
+        <property name="text">
+         <string>Visualize</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <widget class="ctkFittedTextBrowser" name="outputText_Segmentation"/>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -48,6 +96,16 @@
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkFittedTextBrowser</class>
+   <extends>QTextBrowser</extends>
+   <header>ctkFittedTextBrowser.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
   </customwidget>
   <customwidget>
    <class>qMRMLWidget</class>
