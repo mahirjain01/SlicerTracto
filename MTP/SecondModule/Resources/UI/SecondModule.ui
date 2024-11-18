@@ -70,39 +70,36 @@
         </item>
         <item>
          <property name="text">
-          <string>algo</string>
+          <string>prob</string>
          </property>
         </item>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Location to save Trk</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="ctkPathLineEdit" name="trkPath">
+        <property name="filters">
+         <set>ctkPathLineEdit::Dirs</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
        <widget class="QPushButton" name="generateTrkButton">
         <property name="text">
          <string>Generate Trk</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="8" column="1">
        <widget class="QPushButton" name="visualizeTrkButton">
         <property name="text">
          <string>Visualize Trk</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Save TRK Path</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="ctkPathLineEdit" name="trkPath"/>
-      </item>
-      <item row="8" column="0">
-       <widget class="QPushButton" name="saveTrkButton">
-        <property name="text">
-         <string>Save Trk</string>
         </property>
        </widget>
       </item>
