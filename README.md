@@ -54,11 +54,12 @@ This Slicer extension provides tools for advanced white matter analysis using di
 
 2. Clone the scilpy library inside each module directory:
     ```bash
+    cd MTP
     git clone https://github.com/scilus/scilpy.git FirstModule/scilpy
     git clone https://github.com/scilus/scilpy.git SecondModule/scilpy
     git clone https://github.com/scilus/scilpy.git ThirdModule/scilpy
 
-    The scilpy library provides essential tools for diffusion MRI processing and tractography.
+The scilpy library provides essential tools for diffusion MRI processing and tractography.
 
 3. Open 3D Slicer and navigate to the Extensions Manager.
 
