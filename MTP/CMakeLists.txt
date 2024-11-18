@@ -31,6 +31,7 @@ add_subdirectory(ThirdModule)
 add_subdirectory(DipyTools)
 
 
+add_subdirectory(FourthModule)
 ## NEXT_MODULE
 
 #-----------------------------------------------------------------------------
