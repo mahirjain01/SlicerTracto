@@ -200,6 +200,8 @@ class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         #Combo Box
         self.ui.algo.currentIndexChanged.connect(self._tractographyParams.set_algo)
 
+        self._tractographyParams.outputText = self.ui.outputText
+
 
         # Make sure parameter node is initialized (needed for module reload)
         self.initializeParameterNode()

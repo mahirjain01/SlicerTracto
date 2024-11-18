@@ -41,6 +41,10 @@ from nibabel.streamlines.tractogram import LazyTractogram
 from scripts.scil_frf_ssst import main as scil_frf_ssst_main
 import slicer.util
 import slicer
+import vtk
+from dipy.io.streamline import load_tractogram
+from dipy.io.stateful_tractogram import Space
+from dipy.io.utils import is_header_compatible
 
 
 
@@ -68,6 +72,7 @@ class Tractography:
         self.algo: str = "det"
         self.trkPath : str = None
         self.seedingMaskPath = SEEDING_MASK_FILE_PATH
+        self.outputText = None
 
     @staticmethod
     def isValidPath(path: str) -> bool:
@@ -295,7 +300,9 @@ class Tractography:
 
     def visualizeTrk(self):
         """Placeholder method for visualizing tractography."""
-        print("Visualizing tractography...jdsj")
+        tractogram = load_tractogram(self.trkPath, reference='same', bbox_valid_check=False, to_space=Space.RASMM)
+        print(" tractography Visualization...jdsj")
+        self.saveStreamlinesVTK(tractogram.streamlines, RESULT_VTK )
         # try:
         #     success, fiberBundleNode = slicer.util.loadFiberBundle(self.trkPath, returnNode=True)
         #     if success:
@@ -307,7 +314,7 @@ class Tractography:
         #     slicer.util.errorDisplay(f"Error loading .trk file: {str(e)}")
 
         reader = vtkPolyDataReader()
-        reader.SetFileName(self.trkPath)
+        reader.SetFileName(RESULT_VTK)
         reader.Update()
 
         polydata = reader.GetOutput()
@@ -325,6 +332,7 @@ class Tractography:
         slicer.app.applicationLogic().PropagateVolumeSelection()
         slicer.app.layoutManager().resetThreeDViews()   
         print("Done Visualization")
+        self.outputText.append(f' VTK Files Genererated Succesfully (location : {RESULT_VTK}) \n Visualization Complete \n')
 
     
 
@@ -372,7 +380,7 @@ class Tractography:
 
    
 
-    def saveStreamlinesVTK(streamlines, pStreamlines):
+    def saveStreamlinesVTK(self, streamlines, pStreamlines):
         
         polydata = vtk.vtkPolyData()
 
