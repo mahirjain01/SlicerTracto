@@ -2,7 +2,7 @@
 
 This Slicer extension provides tools for advanced white matter analysis using diffusion MRI data. It includes three modules designed for FODF generation, tractography, and metric analysis of white matter fiber tracks.
 
-![Extension Screenshot](\images\Screenshot-Extension.png)
+![Extension Screenshot](images/Screenshot-Extension.png)
 ---
 
 ## Features
@@ -16,7 +16,7 @@ This Slicer extension provides tools for advanced white matter analysis using di
    - **BVALS**: File containing b-values (`.bvals`).
    - **BVECS**: File containing b-vectors (`.bvecs`).
 
-   ![Generate FODF Module Screenshot](\images\Screenshot-GenerateFoDFs.png)
+   ![Generate FODF Module Screenshot](images/Screenshot-GenerateFoDFs.png)
 
 ---
 
@@ -37,7 +37,7 @@ This Slicer extension provides tools for advanced white matter analysis using di
    - Automatically generates a seeding mask from the approximate mask.
    - Converts `.trk` files to `.vtk` for 3D visualization in Slicer.
 
-   ![Tractography Module Screenshot](\images\Screenshot-Tractography.png)
+   ![Tractography Module Screenshot](images/Screenshot-Tractography.png)
 
 ---
 
@@ -49,7 +49,7 @@ This Slicer extension provides tools for advanced white matter analysis using di
    - **Overreach Score**: Quantifies tracks extending beyond the target area.
    - **Overlap Score**: Measures the shared region between two tractographies.
 
-   ![Metric Analysis Module Screenshot](\images\Screenshot-MetricAnalysis.png)
+   ![Metric Analysis Module Screenshot](images/Screenshot-MetricAnalysis.png)
 
 ---
 
