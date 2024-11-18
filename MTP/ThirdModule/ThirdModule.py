@@ -161,7 +161,6 @@ class ThirdModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def enter(self) -> None:
         """Called each time the user opens this module."""
         # Make sure parameter node exists and observed
-        self.initializeParameterNode()
 
     def exit(self) -> None:
         pass
