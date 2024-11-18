@@ -19,6 +19,7 @@ class GenerateFODF:
         self.bvalsPath : str = None
         self.bvecsPath : str = None
         self.fodfPath : str = None
+        self.outputText = None
 
     
     @staticmethod

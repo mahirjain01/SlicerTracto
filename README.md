@@ -59,7 +59,7 @@ This Slicer extension provides tools for advanced white matter analysis using di
    ```bash
    git clone https://github.com/yourusername/white-matter-analysis-extension.git
 
-2. Clone the scilpy library inside each module directory:
+2. Switch to extension-with-submodules branch and then Clone the scilpy library inside each module directory:
     ```bash
     cd MTP
     git clone https://github.com/scilus/scilpy.git FirstModule/scilpy

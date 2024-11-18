@@ -175,6 +175,9 @@ class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.bvecsPath.connect('currentPathChanged(QString)', self._generateFodfParams.setBvecsPath)
         self.ui.fodfPath.connect('currentPathChanged(QString)', self._generateFodfParams.setFodfPath)
 
+        self._generateFodfParams.outputText = self.ui.outputText
+
+
 
     def cleanup(self) -> None:
         """Called when the application closes and the module widget is destroyed."""
