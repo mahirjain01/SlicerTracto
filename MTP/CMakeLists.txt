@@ -28,6 +28,8 @@ include(${Slicer_USE_FILE})
 add_subdirectory(FirstModule)
 add_subdirectory(SecondModule)
 add_subdirectory(ThirdModule)
+add_subdirectory(DipyTools)
+
 
 ## NEXT_MODULE
 

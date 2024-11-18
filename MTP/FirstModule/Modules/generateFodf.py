@@ -67,7 +67,7 @@ class GenerateFODF:
             print(f"Invalid Fodf path: {path}")
     
     def generateFodf(self):
-        preproc_data_dir = "C:/Users/HP/Documents/MTP/Slicer-Task/Final Modules/Outputs/sub-1004"
+        preproc_data_dir = "/Users/mahir/Desktop/SlicerTracto/MTP/outputs"
         
         try:
             # Ensure output directory exists
