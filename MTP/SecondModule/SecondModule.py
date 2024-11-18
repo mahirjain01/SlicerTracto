@@ -21,9 +21,6 @@ import sys
 module_path = os.path.join(os.path.dirname(__file__), "Modules")
 if module_path not in sys.path:
     sys.path.append(module_path)
-print("Second Module")
-# for i in sys.path:
-#     print(i)
 
 from tractography import Tractography
 import qt

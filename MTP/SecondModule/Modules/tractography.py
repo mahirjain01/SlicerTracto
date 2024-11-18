@@ -39,7 +39,8 @@ from nibabel.streamlines.tractogram import LazyTractogram
 
 
 from scripts.scil_frf_ssst import main as scil_frf_ssst_main
-
+import slicer.util
+import slicer
 
 
 
@@ -294,7 +295,37 @@ class Tractography:
 
     def visualizeTrk(self):
         """Placeholder method for visualizing tractography."""
-        print("Visualizing tractography...")
+        print("Visualizing tractography...jdsj")
+        # try:
+        #     success, fiberBundleNode = slicer.util.loadFiberBundle(self.trkPath, returnNode=True)
+        #     if success:
+        #         slicer.util.infoDisplay(f"Successfully loaded: {filePath}")
+        #         slicer.app.layoutManager().threeDWidget(0).threeDView().resetFocalPoint()
+        #     else:
+        #         slicer.util.errorDisplay("Failed to load .trk file.")
+        # except Exception as e:
+        #     slicer.util.errorDisplay(f"Error loading .trk file: {str(e)}")
+
+        reader = vtkPolyDataReader()
+        reader.SetFileName(self.trkPath)
+        reader.Update()
+
+        polydata = reader.GetOutput()
+
+        streamline_node = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
+        streamline_node.SetAndObservePolyData(polydata)
+
+        display_node = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelDisplayNode")
+        streamline_node.SetAndObserveDisplayNodeID(display_node.GetID())
+
+        display_node.SetColor(0, 1, 0)  
+        display_node.SetOpacity(1.0)  
+
+        slicer.app.applicationLogic().GetSelectionNode().SetReferenceActiveVolumeID(streamline_node.GetID())
+        slicer.app.applicationLogic().PropagateVolumeSelection()
+        slicer.app.layoutManager().resetThreeDViews()   
+        print("Done Visualization")
+
     
 
     def __repr__(self):
@@ -339,5 +370,39 @@ class Tractography:
         # Return the number of frames (spherical harmonics coefficients)
         return nFrames
 
+   
+
+    def saveStreamlinesVTK(streamlines, pStreamlines):
         
-        
+        polydata = vtk.vtkPolyData()
+
+        lines = vtk.vtkCellArray()
+        points = vtk.vtkPoints()
+
+        ptCtr = 0
+
+        for i, streamline in enumerate(streamlines):
+            if (i % 10000) == 0:
+                print(f"{i}/{len(streamlines)}")
+            
+            line = vtk.vtkLine()
+            line.GetPointIds().SetNumberOfIds(len(streamline))
+
+            for j, point in enumerate(streamline):
+                points.InsertNextPoint(point)
+                line.GetPointIds().SetId(j, ptCtr)
+                ptCtr += 1
+
+            lines.InsertNextCell(line)
+
+        polydata.SetLines(lines)
+        polydata.SetPoints(points)
+
+        writer = vtk.vtkPolyDataWriter()
+        writer.SetFileName(pStreamlines)
+        writer.SetInputData(polydata)
+        writer.Write()
+
+        print(f"Wrote streamlines to {writer.GetFileName()}")
+            
+            

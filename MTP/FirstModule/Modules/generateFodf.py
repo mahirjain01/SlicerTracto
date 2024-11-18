@@ -1,11 +1,11 @@
 import os
 import sys
 
-parent_dir = os.path.dirname(os.path.dirname(__file__))
-sys.path.append("C:/Users/HP/Documents/MTP/Slicer-Task/Final Modules/FirstModule/FirstModule/scilpy")
+sibling_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scilpy'))
 
-
-
+# Add it to sys.path
+if sibling_folder_path not in sys.path:
+    sys.path.append(sibling_folder_path)
 
 from scripts.scil_frf_ssst import main as scil_frf_ssst_main
 from scripts.scil_fodf_ssst import main as scil_fodf_ssst_main
