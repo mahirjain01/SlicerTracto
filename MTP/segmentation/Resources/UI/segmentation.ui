@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>FourthModule</class>
- <widget class="qMRMLWidget" name="FourthModule">
+ <widget class="qMRMLWidget" name="segmentation">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,58 +14,38 @@
    <item>
     <widget class="ctkCollapsibleButton" name="inputsCollapsibleButton">
      <property name="text">
-      <string>Segmentation</string>
+      <string>Inputs</string>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Inputs</string>
+         <string>Input Streamlines</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Trk Path</string>
+         <string>trk path: </string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="ctkPathLineEdit" name="trkPath_Segmentation"/>
+       <widget class="ctkPathLineEdit" name="trkPath"/>
       </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="segmentationButton_Segmentation">
-        <property name="text">
-         <string>Segment</string>
-        </property>
-       </widget>
-      </item>
+      
       <item row="2" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QPushButton" name="segmentButton">
         <property name="text">
-         <string>Location to save Trks</string>
+         <string>Apply</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="ctkPathLineEdit" name="segmentedTrkFolderPath_Segmentation">
-        <property name="filters">
-         <set>ctkPathLineEdit::Dirs</set>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="visualizeTrks_Segmentation">
+       <widget class="QPushButton" name="visualizeButton">
         <property name="text">
-         <string>Visualize</string>
+         <string>Visualize cluster</string>
         </property>
        </widget>
       </item>
@@ -73,7 +53,7 @@
     </widget>
    </item>
    <item>
-    <widget class="ctkFittedTextBrowser" name="outputText_Segmentation"/>
+    <widget class="ctkFittedTextBrowser" name="outputText"/>
    </item>
    <item>
     <spacer name="verticalSpacer">

@@ -221,7 +221,11 @@ class DipyToolsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.logic = DipyToolsLogic()
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
+
+
+        self.ui.inputButton.connect("clicked(bool)", self.onInputButton)
         self.ui.applyButton.connect("clicked(bool)", self.onApplyButton)
+
         self.initializeParameterNode()
 
     def populate_submodules(self):
@@ -351,26 +355,22 @@ class DipyToolsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if file_dialog.exec_():
             selected_file = file_dialog.selectedFiles()[0]
             line_edit_widget.setText(selected_file)
-        
-    def onApplyButton(self) -> None:
-        """Run processing when user clicks "Apply" button."""
-        
-        # Get selected module, submodule, and function
 
-        
+    def onInputButton(self) -> None:
+
         selected_module = self.combo_module.currentText
         selected_submodule = self.combo_submodule.currentText
         selected_class_func = self.combo_class_func.currentText
         selected_method = self.combo_method.currentText if self.combo_method.isEnabled() else None
         
         module = importlib.import_module(f"dipy.{selected_module}.{selected_submodule}")
-        func = getattr(module, selected_class_func)
+        self.func = getattr(module, selected_class_func)
 
-        if inspect.isclass(func):
+        if inspect.isclass(self.func):
             if selected_method:
-                if hasattr(func, selected_method):
-                    method = getattr(func, selected_method)
-                    params = NumpyDocString(method.__doc__)
+                if hasattr(self.func, selected_method):
+                    method = getattr(self.func, selected_method)
+                    self.params = NumpyDocString(method.__doc__)
                 else:
                     print("Error: Selected method not found in the class.")
                     return
@@ -379,43 +379,35 @@ class DipyToolsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 return
 
         else:
-            params = NumpyDocString(func.__doc__)
+            self.params = NumpyDocString(self.func.__doc__)
 
-        print(f"The function/class here is {func}")
+        print(f"The function/class here is {self.func}")
         
-        for parameter in params["Parameters"]:
+        for parameter in self.params["Parameters"]:
             print(f"{parameter.name} : {parameter.type}")
 
 
         # slicer.util.infoDisplay(params["Parameters"], windowTitle=None, parent=None, standardButtons=None)
         
-        
         self.param_widgets = []
         self.param_values = {}  # Dictionary to store the user's input values
 
-        for parameter in params["Parameters"]:
+        for parameter in self.params["Parameters"]:
             param_name = parameter.name
             param_type = parameter.type.lower()
 
             # Create a widget based on the parameter type
 
             # File path widget (for Streamlines, WM mask, etc.)
-            if param_type == "streamlines" or "path" in param_name.lower():
-                label = qt.QLabel(f"File Path for {param_name}:")
-                path_widget = qt.QLineEdit()  # Editable field for path
-                browse_button = qt.QPushButton("Browse...")
-                browse_button.clicked.connect(lambda _, p=param_name, w=path_widget: self.selectFilePath(p, w))
-                
-                # Layout for file path input
-                path_layout = qt.QHBoxLayout()
-                path_layout.addWidget(path_widget)
-                path_layout.addWidget(browse_button)
+            if "string" in param_type:
+                label = qt.QLabel(f"Value for {param_name} ({param_type}):")
+                text_widget = qt.QLineEdit()
 
-                # Add widgets and layout to the main layout
+                # Add widgets to the layout
                 self.layout.addWidget(label)
-                self.layout.addLayout(path_layout)
-                self.param_widgets.extend([label, path_widget, browse_button])
-                self.param_values[param_name] = path_widget  # Store QLineEdit in param_values for later retrieval
+                self.layout.addWidget(text_widget)
+                self.param_widgets.extend([label, text_widget])
+                self.param_values[param_name] = text_widget  # Store QLineEdit in param_values for later retrieval
 
             # Integer input widget
             elif "int" in param_type:
@@ -438,25 +430,51 @@ class DipyToolsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
             # Fallback for unhandled types
             else:
-                label = qt.QLabel(f"Value for {param_name} ({param_type}):")
-                text_widget = qt.QLineEdit()
+                label = qt.QLabel(f"File Path for {param_name}:")
+                path_widget = qt.QLineEdit()  # Editable field for path
+                browse_button = qt.QPushButton("Browse...")
+                browse_button.clicked.connect(lambda _, p=param_name, w=path_widget: self.selectFilePath(p, w))
+                
+                # Layout for file path input
+                path_layout = qt.QHBoxLayout()
+                path_layout.addWidget(path_widget)
+                path_layout.addWidget(browse_button)
 
-                # Add widgets to the layout
+                # Add widgets and layout to the main layout
                 self.layout.addWidget(label)
-                self.layout.addWidget(text_widget)
-                self.param_widgets.extend([label, text_widget])
-                self.param_values[param_name] = text_widget  # Store QLineEdit in param_values for later retrieval
-            
-        param_values = {param.name: widget.value() if isinstance(widget, qt.QSpinBox) else
-                        widget.isChecked() if isinstance(widget, qt.QCheckBox) else
-                        widget.text() for param, widget in zip(params["Parameters"], self.param_widgets)}
+                self.layout.addLayout(path_layout)
+                self.param_widgets.extend([label, path_widget, browse_button])
+                self.param_values[param_name] = path_widget  # Store QLineEdit in param_values for later retrieval
+
+
         
-        # Call the function/method and handle exceptions if they arise
+    def onApplyButton(self) -> None:
+        """Run processing when user clicks 'Apply' button."""
         try:
-            result = func(**param_values) if selected_method is None else getattr(func, selected_method)(**param_values)
-            slicer.util.infoDisplay("Execution successful.")
+            # Extract parameter values from widgets
+            param_values = {}
+            for param, widget in zip(self.params["Parameters"], self.param_values.values()):
+                if isinstance(widget, qt.QSpinBox):  # Integer input
+                    param_values[param.name] = widget.value()
+                elif isinstance(widget, qt.QCheckBox):  # Boolean input
+                    param_values[param.name] = widget.isChecked()
+                elif isinstance(widget, qt.QLineEdit):  # String input
+                    param_values[param.name] = widget.text
+                else:
+                    raise TypeError(f"Unhandled widget type for parameter {param.name}.")
+
+            print("Parameter values:", param_values)
+
+            # Call the function with the extracted parameter values
+
+            with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
+           
+                self.logic.process(param_values, self.func)
+                # slicer.util.infoDisplay(f"Execution successful: ")
+
         except Exception as e:
             slicer.util.errorDisplay(f"Execution failed: {e}")
+
 
                 
 
@@ -481,44 +499,82 @@ class DipyToolsLogic(ScriptedLoadableModuleLogic):
 
     def getParameterNode(self):
         return DipyToolsParameterNode(super().getParameterNode())
-
-    def process(self,
-                inputVolume: vtkMRMLScalarVolumeNode,
-                outputVolume: vtkMRMLScalarVolumeNode,
-                imageThreshold: float,
-                invert: bool = False,
-                showResult: bool = True) -> None:
-        """
-        Run the processing algorithm.
-        Can be used without GUI widget.
-        :param inputVolume: volume to be thresholded
-        :param outputVolume: thresholding result
-        :param imageThreshold: values above/below this threshold will be set to 0
-        :param invert: if True then values above the threshold will be set to 0, otherwise values below are set to 0
-        :param showResult: show output volume in slice viewers
-        """
-
-        if not inputVolume or not outputVolume:
-            raise ValueError("Input or output volume is invalid")
-
+    
+    def process(self, param_values, func):
+        
+        import inspect
         import time
-
+        
         startTime = time.time()
         logging.info("Processing started")
 
-        # Compute the thresholded output volume using the "Threshold Scalar Volume" CLI module
-        cliParams = {
-            "InputVolume": inputVolume.GetID(),
-            "OutputVolume": outputVolume.GetID(),
-            "ThresholdValue": imageThreshold,
-            "ThresholdType": "Above" if invert else "Below",
-        }
-        cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True, update_display=showResult)
-        # We don't need the CLI module node anymore, remove it to not clutter the scene with it
-        slicer.mrmlScene.RemoveNode(cliNode)
+        # Inspect the function signature to verify parameters
+        signature = inspect.signature(func)
+        func_params = signature.parameters
+
+        # Validate provided parameters against the function's requirements
+        for param_name in func_params:
+            if param_name not in param_values:
+                raise ValueError(f"Missing required parameter: {param_name}")
+
+        # Convert arguments to match function signature
+        # (This could include type conversion if necessary)
+        arguments = {}
+        for param_name, param in func_params.items():
+            if param_name in param_values:
+                arguments[param_name] = param_values[param_name]
+            elif param.default is not param.empty:
+                arguments[param_name] = param.default  # Use default if provided
+            else:
+                raise ValueError(f"Missing required parameter without default: {param_name}")
+
+        # Call the function with the prepared arguments
+        result = func(**arguments)
+        print("Function executed successfully. Result:", result)
 
         stopTime = time.time()
         logging.info(f"Processing completed in {stopTime-startTime:.2f} seconds")
+
+        return result
+
+
+    # def process(self,
+    #             inputVolume: vtkMRMLScalarVolumeNode,
+    #             outputVolume: vtkMRMLScalarVolumeNode,
+    #             imageThreshold: float,
+    #             invert: bool = False,
+    #             showResult: bool = True) -> None:
+    #     """
+    #     Run the processing algorithm.
+    #     Can be used without GUI widget.
+    #     :param inputVolume: volume to be thresholded
+    #     :param outputVolume: thresholding result
+    #     :param imageThreshold: values above/below this threshold will be set to 0
+    #     :param invert: if True then values above the threshold will be set to 0, otherwise values below are set to 0
+    #     :param showResult: show output volume in slice viewers
+    #     """
+
+    #     if not inputVolume or not outputVolume:
+    #         raise ValueError("Input or output volume is invalid")
+
+    #     import time
+
+    #     startTime = time.time()
+    #     logging.info("Processing started")
+
+    #     # Compute the thresholded output volume using the "Threshold Scalar Volume" CLI module
+    #     cliParams = {
+    #         "InputVolume": inputVolume.GetID(),
+    #         "OutputVolume": outputVolume.GetID(),
+    #         "ThresholdValue": imageThreshold,
+    #         "ThresholdType": "Above" if invert else "Below",
+    #     }
+    #     cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True, update_display=showResult)
+    #     # We don't need the CLI module node anymore, remove it to not clutter the scene with it
+    #     slicer.mrmlScene.RemoveNode(cliNode)
+
+    #     stopTime = time.time()
+    #     logging.info(f"Processing completed in {stopTime-startTime:.2f} seconds")
 
 
 #

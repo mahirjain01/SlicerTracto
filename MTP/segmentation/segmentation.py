@@ -4,9 +4,14 @@ import sys
 module_path = os.path.join(os.path.dirname(__file__), "Modules")
 if module_path not in sys.path:
     sys.path.append(module_path)
+
+import os
 from typing import Annotated, Optional
 
 import vtk
+import dipy
+
+from __main__ import vtk, qt, ctk, slicer
 
 import slicer
 from slicer.i18n import tr as _
@@ -17,24 +22,23 @@ from slicer.parameterNodeWrapper import (
     parameterNodeWrapper,
     WithinRange,
 )
-
+from clustering import Segment
 from slicer import vtkMRMLScalarVolumeNode
-from segmentation import Segmentation
 
 
 #
-# FourthModule
+# segmentation
 #
 
 
-class FourthModule(ScriptedLoadableModule):
+class segmentation(ScriptedLoadableModule):
     """Uses ScriptedLoadableModule base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = _("FourthModule")  # TODO: make this more human readable by adding spaces
+        self.parent.title = _("segmentation")  # TODO: make this more human readable by adding spaces
         # TODO: set categories (folders where the module shows up in the module selector)
         self.parent.categories = [translate("qSlicerAbstractCoreModule", "MTP")]
         self.parent.dependencies = []  # TODO: add here list of module names that this module requires
@@ -43,7 +47,7 @@ class FourthModule(ScriptedLoadableModule):
         # _() function marks text as translatable to other languages
         self.parent.helpText = _("""
 This is an example of scripted loadable module bundled in an extension.
-See more information in <a href="https://github.com/organization/projectname#FourthModule">module documentation</a>.
+See more information in <a href="https://github.com/organization/projectname#segmentation">module documentation</a>.
 """)
         # TODO: replace with organization, grant and thanks
         self.parent.acknowledgementText = _("""
@@ -72,44 +76,45 @@ def registerSampleData():
     # To ensure that the source code repository remains small (can be downloaded and installed quickly)
     # it is recommended to store data sets that are larger than a few MB in a Github release.
 
-    # FourthModule1
+    # segmentation1
     SampleData.SampleDataLogic.registerCustomSampleDataSource(
         # Category and sample name displayed in Sample Data module
-        category="FourthModule",
-        sampleName="FourthModule1",
+        category="segmentation",
+        sampleName="segmentation1",
         # Thumbnail should have size of approximately 260x280 pixels and stored in Resources/Icons folder.
         # It can be created by Screen Capture module, "Capture all views" option enabled, "Number of images" set to "Single".
-        thumbnailFileName=os.path.join(iconsPath, "FourthModule1.png"),
+        thumbnailFileName=os.path.join(iconsPath, "segmentation1.png"),
         # Download URL and target file name
         uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
-        fileNames="FourthModule1.nrrd",
+        fileNames="segmentation1.nrrd",
         # Checksum to ensure file integrity. Can be computed by this command:
         #  import hashlib; print(hashlib.sha256(open(filename, "rb").read()).hexdigest())
         checksums="SHA256:998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
         # This node name will be used when the data set is loaded
-        nodeNames="FourthModule1",
+        nodeNames="segmentation1",
     )
 
-    # FourthModule2
+    # segmentation2
     SampleData.SampleDataLogic.registerCustomSampleDataSource(
         # Category and sample name displayed in Sample Data module
-        category="FourthModule",
-        sampleName="FourthModule2",
-        thumbnailFileName=os.path.join(iconsPath, "FourthModule2.png"),
+        category="segmentation",
+        sampleName="segmentation2",
+        thumbnailFileName=os.path.join(iconsPath, "segmentation2.png"),
         # Download URL and target file name
         uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
-        fileNames="FourthModule2.nrrd",
+        fileNames="segmentation2.nrrd",
         checksums="SHA256:1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
         # This node name will be used when the data set is loaded
-        nodeNames="FourthModule2",
+        nodeNames="segmentation2",
     )
 
+
 #
-# FourthModuleWidget
+# segmentationWidget
 #
 
 
-class FourthModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+class segmentationWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     """Uses ScriptedLoadableModuleWidget base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
@@ -118,16 +123,18 @@ class FourthModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         """Called when the user opens the module the first time and the widget is initialized."""
         ScriptedLoadableModuleWidget.__init__(self, parent)
         VTKObservationMixin.__init__(self)  # needed for parameter node observation
+
+        self._segmentParams : Segment = Segment()
         self._parameterNodeGuiTag = None
-        self._segmentationParams : Segmentation = Segmentation()
 
     def setup(self) -> None:
         """Called when the user opens the module the first time and the widget is initialized."""
         ScriptedLoadableModuleWidget.setup(self)
 
+    
         # Load widget from .ui file (created by Qt Designer).
         # Additional widgets can be instantiated manually and added to self.layout.
-        uiWidget = slicer.util.loadUI(self.resourcePath("UI/FourthModule.ui"))
+        uiWidget = slicer.util.loadUI(self.resourcePath("UI/segmentation.ui"))
         self.layout.addWidget(uiWidget)
         self.ui = slicer.util.childWidgetVariables(uiWidget)
 
@@ -136,6 +143,7 @@ class FourthModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # "setMRMLScene(vtkMRMLScene*)" slot.
         uiWidget.setMRMLScene(slicer.mrmlScene)
 
+
         # Connections
 
         # These connections ensure that we update parameter node when scene is closed
@@ -143,19 +151,28 @@ class FourthModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
         # Buttons
-        self.ui.segmentationButton_Segmentation.connect("clicked(bool)", self._segmentationParams.generateTrk)
+<<<<<<< HEAD:MTP/FourthModule/FourthModule.py
+        self.ui.segmentationButton_Segmentation.connect("clicked(bool)", self._segmentationParams.segmentTrk)
         self.ui.visualizeTrks_Segmentation.connect("clicked(bool)", self._segmentationParams.visualizeSegmentation)
 
-        self.ui.trkPath_Segmentation.connect('currentPathChanged(QString)', self._tractographyParams.set_trkPath)
-        self.ui.segmentedTrkFolderPath_Segmentation.connect('currentPathChanged(QString)', self._tractographyParams.set_segmentedTrkFolderPath)
+        self.ui.trkPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_trkPath)
+        self.ui.segmentedTrkFolderPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_segmentedTrkFolderPath)
 
 
-        self._tractographyParams.outputText = self.ui.outputText
+        self._segmentationParams.outputText = self.ui.outputText_Segmentation
 
         
 
        
 
+=======
+        self.ui.segmentButton.connect("clicked(bool)", self._segmentParams.segment)
+        self.ui.visualizeButton.connect("clicked(bool)", self._segmentParams.visualizeFodf)
+
+        self.ui.trkPath.connect('currentPathChanged(QString)', self._segmentParams.settrkPath)
+
+
+>>>>>>> 5ac2fc37208bb2e63bcc35837742909500f58e71:MTP/segmentation/segmentation.py
     def cleanup(self) -> None:
         """Called when the application closes and the module widget is destroyed."""
         self.removeObservers()
@@ -172,4 +189,3 @@ class FourthModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def onSceneEndClose(self, caller, event) -> None:
         pass
 
-    

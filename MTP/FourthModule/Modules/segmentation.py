@@ -1,14 +1,14 @@
 
 from dipy.io.streamline import load_tractogram
-from dipy.segment.quickbundles import QuickBundles
+from dipy.segment.clustering import QuickBundles
 from dipy.io.streamline import save_trk
 from dipy.tracking.streamline import transform_streamlines
 from dipy.io.streamline import load_tractogram
-from dipy.segment.quickbundles import QuickBundles
 from dipy.io.streamline import save_tractogram
-
+import vtk
 import os
-
+import slicer
+import random
 
 DEFAULT_SEGMENTED_TRK_FILE_NAME_PREFIX = 'segmentedTrk'
 THRESHOLD : float = 10.0
@@ -63,14 +63,93 @@ class Segmentation:
             cluster_streamlines = [streamlines[idx] for idx in cluster.indices]
             
             # Save the cluster to a new .trk file
-            fileName = DEFAULT_SEGMENTED_TRK_FILE_NAME_PREFIX + f"-{i}.trk"
-            filePath = os.path.join(self.segmentedTrkFolderPath, fileName)
-            save_tractogram(tractogram, filePath, streamlines=cluster_streamlines)
-            self.outputText.append(f'Cluster {i} saved in file {filePath} \n\n')
+            trkFileName = DEFAULT_SEGMENTED_TRK_FILE_NAME_PREFIX + f"-{i}.trk"
+            vtkFileName = DEFAULT_SEGMENTED_TRK_FILE_NAME_PREFIX + f"-{i}.vtk"
+
+            trkFilePath = os.path.join(self.segmentedTrkFolderPath, trkFileName)
+            vtkFilePath = os.path.join(self.segmentedTrkFolderPath, vtkFileName)
+
+            save_tractogram(tractogram, trkFilePath)
+            tractogram = load_tractogram(trkFilePath, reference="same")
+            self._saveStreamlinesVTK(tractogram.streamlines, vtkFilePath )
+            self.outputText.append(f'Cluster {i} saved in file {trkFileName} \n\n')
 
     def visualizeSegmentation(self):
-        pass
+        """
+        Load and visualize multiple .vtk files from a directory in 3D Slicer,
+        assigning a random color to each file.
+
+        Args:
+            vtk_files_directory (str): Path to the directory containing .vtk files.
+        """
+        # Check if the directory exists
+        vtk_files_directory = self.segmentedTrkFolderPath
+        if not os.path.exists(vtk_files_directory):
+            print(f"Directory not found: {vtk_files_directory}")
+            return
         
+        # List all .vtk files in the directory
+        vtk_files = [f for f in os.listdir(vtk_files_directory) if f.endswith('.vtk')]
+        if not vtk_files:
+            print("No .vtk files found in the directory.")
+            return
+        
+        print(f"Found {len(vtk_files)} .vtk files. Loading with random colors...")
+
+        for vtk_file in vtk_files:
+            # Create the full file path
+            file_path = os.path.join(vtk_files_directory, vtk_file)
+            
+            # Load the .vtk file as a model
+            loaded_node = slicer.util.loadModel(file_path)
+            
+            if loaded_node:
+                print(f"Loaded: {vtk_file}")
+                
+                # Generate a random color (RGB values between 0 and 1)
+                random_color = [random.random(), random.random(), random.random()]
+                
+                # Set the color of the model
+                display_node = loaded_node.GetDisplayNode()
+                if display_node:
+                    display_node.SetColor(random_color)
+                    print(f"Assigned color {random_color} to {vtk_file}")
+            else:
+                print(f"Failed to load: {vtk_file}")
+    
+    def _saveStreamlinesVTK(self, streamlines, pStreamlines):
+        
+        polydata = vtk.vtkPolyData()
+
+        lines = vtk.vtkCellArray()
+        points = vtk.vtkPoints()
+
+        ptCtr = 0
+
+        for i, streamline in enumerate(streamlines):
+            if (i % 10000) == 0:
+                print(f"{i}/{len(streamlines)}")
+            
+            line = vtk.vtkLine()
+            line.GetPointIds().SetNumberOfIds(len(streamline))
+
+            for j, point in enumerate(streamline):
+                points.InsertNextPoint(point)
+                line.GetPointIds().SetId(j, ptCtr)
+                ptCtr += 1
+
+            lines.InsertNextCell(line)
+
+        polydata.SetLines(lines)
+        polydata.SetPoints(points)
+
+        writer = vtk.vtkPolyDataWriter()
+        writer.SetFileName(pStreamlines)
+        writer.SetInputData(polydata)
+        writer.Write()
+
+        print(f"Wrote streamlines to {writer.GetFileName()}")
+            
 
 
         
