@@ -19,7 +19,7 @@ from slicer.parameterNodeWrapper import (
 )
 
 from slicer import vtkMRMLScalarVolumeNode
-from segmentation import Segmentation
+from segmentationModule import Segmentation
 
 
 #
@@ -142,15 +142,16 @@ class FourthModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
-        # # Buttons
-        # self.ui.segmentationButton_Segmentation.connect("clicked(bool)", self._segmentationParams.generateTrk)
-        # self.ui.visualizeTrks_Segmentation.connect("clicked(bool)", self._segmentationParams.visualizeSegmentation)
+        # Buttons
+        self.ui.segmentationButton_Segmentation.connect("clicked(bool)", self._segmentationParams.segmentTrk)
+        self.ui.visualizeTrks_Segmentation.connect("clicked(bool)", self._segmentationParams.visualizeSegmentation)
 
-        # self.ui.trkPath_Segmentation.connect('currentPathChanged(QString)', self._tractographyParams.set_trkPath)
-        # self.ui.segmentedTrkFolderPath_Segmentation.connect('currentPathChanged(QString)', self._tractographyParams.set_segmentedTrkFolderPath)
+        self.ui.trkPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_trkPath)
+        self.ui.segmentedTrkFolderPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_segmentedTrkFolderPath)
 
 
-        # self._tractographyParams.outputText = self.ui.outputText
+        self._segmentationParams.outputText = self.ui.outputText_Segmenatation
+        self.ui.threasholdInput.valueChanged.connect(self._segmentationParams.set_threshold)
 
         
 
