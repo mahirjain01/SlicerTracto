@@ -32,8 +32,6 @@ add_subdirectory(segmentation)
 add_subdirectory(DipyTools)
 add_subdirectory(FourthModule)
 
-
-add_subdirectory(FourthModule)
 ## NEXT_MODULE
 
 #-----------------------------------------------------------------------------
