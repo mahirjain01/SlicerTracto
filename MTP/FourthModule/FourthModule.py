@@ -34,7 +34,7 @@ class FourthModule(ScriptedLoadableModule):
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = _("FourthModule")  # TODO: make this more human readable by adding spaces
+        self.parent.title = _("Segmentation")  # TODO: make this more human readable by adding spaces
         # TODO: set categories (folders where the module shows up in the module selector)
         self.parent.categories = [translate("qSlicerAbstractCoreModule", "MTP")]
         self.parent.dependencies = []  # TODO: add here list of module names that this module requires
