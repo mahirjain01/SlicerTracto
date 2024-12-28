@@ -18,7 +18,7 @@ from slicer.parameterNodeWrapper import (
 from slicer import vtkMRMLScalarVolumeNode
 from tractography import Tractography
 import qt
-
+from UIManager.TractographyUIManager import TractographyUIManager
 #
 # SecondModule
 #
@@ -134,34 +134,9 @@ class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # in batch mode, without a graphical user interface.
 
         # Connections
+        self._tractographyCallbacks = TractographyUIManager(self.ui)
 
-        # These connections ensure that we update parameter node when scene is closed
-        self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
-        self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
-
-        # Buttons
-        self.ui.generateTrkButton.connect("clicked(bool)", self._tractographyParams.generateTrk)
-        self.ui.visualizeTrkButton.connect("clicked(bool)", self._tractographyParams.visualizeTrk)
-
-        # Paths
-        self.ui.approxMaskPath.connect('currentPathChanged(QString)', self._tractographyParams.set_approxMaskPath)
-        self.ui.fodfTractographyPath.connect('currentPathChanged(QString)', self._tractographyParams.set_fodfPath)
-        self.ui.approxMaskPath.connect('currentPathChanged(QString)', self._tractographyParams.set_approxMaskPath)
-        self.ui.trkPath.connect('currentPathChanged(QString)', self._tractographyParams.set_trkPath)
-
-        # Text
-        validator = qt.QDoubleValidator()
-        validator.setNotation(qt.QDoubleValidator.StandardNotation)
-        validator.setDecimals(4)  # Allow up to 4 decimal places
-        validator.setRange(-100.0, 100.0) 
-        self.ui.stepSize.setValidator(validator)
-        self.ui.stepSize.textChanged.connect(self._tractographyParams.set_stepSize)
-
-        #Combo Box
-        self.ui.algo.currentIndexChanged.connect(self._tractographyParams.set_algo)
-        
-        #Output Box
-        self._tractographyParams.outputText = self.ui.outputText
+       
 
         # Make sure parameter node is initialized (needed for module reload)
 
