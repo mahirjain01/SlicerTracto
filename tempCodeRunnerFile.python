@@ -1,0 +1,54 @@
+import trx
+import vtk
+import numpy as np
+
+def trk_to_vtk(trk_file, vtk_file):
+    # Load the TRK file using the trx library
+    tractogram = trx.Tractogram.from_file(trk_file)
+    
+    # Create a VTK polydata object to store the tract data
+    poly_data = vtk.vtkPolyData()
+    
+    # Create a VTK points array to store the points of the fibers
+    vtk_points = vtk.vtkPoints()
+    
+    # Create a VTK cells array to store the lines (fiber tracts)
+    vtk_lines = vtk.vtkCellArray()
+    
+    # Iterate through the tracts in the tractogram
+    for tract in tractogram:
+        # Extract the 3D coordinates of the fiber tract (each fiber is a list of points)
+        tract_points = tract.points
+        
+        # Convert the tract points to VTK points and add them to the VTK points object
+        point_ids = []
+        for point in tract_points:
+            point_id = vtk_points.InsertNextPoint(point[0], point[1], point[2])
+            point_ids.append(point_id)
+        
+        # Create a VTK line for the current tract and add it to the VTK cell array
+        line = vtk.vtkCellArray()
+        for i in range(len(point_ids) - 1):
+            line.InsertNextCell(2)
+            line.InsertCellPoint(point_ids[i])
+            line.InsertCellPoint(point_ids[i + 1])
+        
+        vtk_lines.InsertNextCell(line)
+    
+    # Set the points and lines to the polydata object
+    poly_data.SetPoints(vtk_points)
+    poly_data.SetLines(vtk_lines)
+    
+    # Create a VTK writer to save the polydata as a VTK file
+    writer = vtk.vtkPolyDataWriter()
+    writer.SetFileName(vtk_file)
+    writer.SetInputData(poly_data)
+    writer.Write()
+    
+    print(f"Converted {trk_file} to {vtk_file}.")
+
+# Example usage:
+trk_file = "C:\Users\HP\Documents\MTP\Slicer-Task\FinalModules\Codes\IndividualExtension\SlicerTracto\MTP\SecondModule\Output\SeedingMask\sub-1061_trk.trk"  # Replace with your TRK file path
+vtk_file = "C:\Users\HP\Documents\MTP\Slicer-Task\FinalModules\Codes\IndividualExtension\SlicerTracto\MTP\SecondModule\Output\SeedingMask\sub-1061_vtk.vtk"  # Replace with your desired output VTK file path
+
+trk_to_vtk(trk_file, vtk_file)

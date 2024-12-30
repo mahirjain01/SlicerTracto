@@ -116,14 +116,14 @@ class SSHManager:
         # Upload FODF file
         print("Uploading FODF file...")
         upload_start_time = time.time()
-        self.upload_file(local_path=fodfFilePath, remote_path=remoteFodfFilePath)
+        # self.upload_file(local_path=fodfFilePath, remote_path=remoteFodfFilePath)
         upload_end_time = time.time()
         print(f"Time taken to upload FODF file: {upload_end_time - upload_start_time:.2f} seconds")
 
         # Upload Approximate Mask file
         print("Uploading Approximate Mask file...")
         upload_start_time = time.time()
-        self.upload_file(local_path=approxMaskPathFilePath, remote_path=remoteApproxMaskPathFilePath)
+        # self.upload_file(local_path=approxMaskPathFilePath, remote_path=remoteApproxMaskPathFilePath)
         upload_end_time = time.time()
         print(f"Time taken to upload Approximate Mask file: {upload_end_time - upload_start_time:.2f} seconds")
 

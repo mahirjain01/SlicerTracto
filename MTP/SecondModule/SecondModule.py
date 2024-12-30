@@ -134,7 +134,7 @@ class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # in batch mode, without a graphical user interface.
 
         # Connections
-        self._tractographyCallbacks = TractographyUIManager(self.ui)
+        self._tractographyCallbacks = TractographyUIManager(self.ui, self.layout, uiWidget)
 
        
 

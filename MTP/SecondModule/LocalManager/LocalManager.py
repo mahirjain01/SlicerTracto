@@ -1,4 +1,4 @@
-from LocalManager.Algos import algo1, algo2
+from LocalManager.Algos import algo1
 
 class LocalManager:
     def __init__(self):
@@ -8,4 +8,5 @@ class LocalManager:
         if algo == 'algo1':
             algo1.run(subjectName=subjectName, approxMaskPathFilePath=approxMaskPathFilePath, fodfFilePath=fodfFilePath)
         elif algo == 'algo2':
-            algo2.run(approxMaskPathFilePath=approxMaskPathFilePath, fodfFilePath=fodfFilePath)
+            pass
+            # algo2.run(approxMaskPathFilePath=approxMaskPathFilePath, fodfFilePath=fodfFilePath)
