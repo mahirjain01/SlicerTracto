@@ -16,13 +16,12 @@ class TractographyUIManager:
         self.uiWidget = uiWidget
         self.computationManager = ComputationManager()
         self.computationMethod = "Local"
-        self.algo = "algo1"
-        self.fodf_path = None
-        self.mask_path = None
+        self.algo = "dipy"
+        self.folderPath = None
         self.subjectName = None
 
         self.computationMethods = ["Local", "SSH"]
-        self.algos = ["algo1", "algo2"]
+        self.algos = ["dipy", "PFT"]
         self.trkPathList = []
         self.trkPath = None
         self.vtkFolderPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Output', 'VTKS')
@@ -55,35 +54,18 @@ class TractographyUIManager:
         self._loadTrks()
     
     def generateTrk(self):
-        if self.fodf_path and self.mask_path:
+        if self.folderPath:
             print("[SLICER TRACTO]RUNNING...")
-            self.computationManager.route_request(method=self.computationMethod, algo=self.algo, subjectName=self.subjectName, approxMaskPathFilePath=self.mask_path, fodfFilePath=self.fodf_path)
+            self.computationManager.route_request(method=self.computationMethod, algo=self.algo, subjectName=self.subjectName, folderPath=self.folderPath)
             self._loadTrks()
         else:
             print("[SLICER TRACTO][ERROR]Cannot file FODF or MASK file")
     
     def setInputFolderPath(self, path:str):
-        fodf_path = None
-        mask_path = None
-
-        # Iterate through all files in the folder
-        for file_name in os.listdir(path):
-            file_path = os.path.join(path, file_name)
-
-            # Check if the current file is a .nii file
-            if file_name.endswith("fodf.nii"):
-                fodf_path = file_path
-            elif file_name.endswith("approximated_mask.nii"):
-                mask_path = file_path
-
-            # Stop searching if both files are found
-            if fodf_path and mask_path:
-                break
-        if fodf_path and mask_path:
-            print("[SLICER TRACTO] FODF and MASK file found")
-        self.fodf_path = fodf_path
-        self.mask_path = mask_path
+        self.folderPath = path
         self.subjectName = os.path.basename(path)
+        print(f"[SLICER TRACTO]Folder Path Set And Subject Name Set to f{self.subjectName}")
+        
     
     def setComputationMethod(self, index:int):
         self.computationMethod = self.computationMethods[index]

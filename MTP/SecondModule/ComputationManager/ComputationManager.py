@@ -7,8 +7,8 @@ class ComputationManager:
         self.ssh_middleware = SSHManager()
 
 
-    def route_request(self, subjectName, method, algo, approxMaskPathFilePath, fodfFilePath):
+    def route_request(self, subjectName, method, algo, folderPath):
         if method == "Local":
-            self.local_middleware.execute(subjectName=subjectName, algo=algo, approxMaskPathFilePath=approxMaskPathFilePath, fodfFilePath=fodfFilePath)
+            self.local_middleware.execute(subjectName=subjectName, algo=algo, folderPath = folderPath)
         elif method == "SSH":
-            self.ssh_middleware.execute(subjectName=subjectName, algo=algo, approxMaskPathFilePath=approxMaskPathFilePath, fodfFilePath=fodfFilePath)
+            self.ssh_middleware.execute(subjectName=subjectName, algo=algo, folderPath = folderPath)

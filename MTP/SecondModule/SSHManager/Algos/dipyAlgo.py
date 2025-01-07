@@ -58,10 +58,9 @@ ALGO = "det"
 STEP_SIZE = 0.5
 OUTPUT_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Output")
 INPUT_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Input")
-SEEDING_MASK_FOLDER_PATH: str = os.path.join(OUTPUT_FOLDER_PATH)
-TRKS_FOLDER_PATH: str = os.path.join(OUTPUT_FOLDER_PATH)
-os.makedirs(SEEDING_MASK_FOLDER_PATH, exist_ok=True)
-os.makedirs(TRKS_FOLDER_PATH, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER_PATH, exist_ok=True)
+os.makedirs(INPUT_FOLDER_PATH, exist_ok=True)
+
 
 
 def run(subjectName, approxMaskPathFilePath, fodfFilePath):

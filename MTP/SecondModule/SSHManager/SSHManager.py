@@ -2,7 +2,7 @@ import paramiko
 import os
 import logging
 from SSHManager import configuration
-from SSHManager.Algos import algo1
+from SSHManager.Algos import dipyAlgo, pftAlgo
 from FileManager.FileManager import FileManager
 from scp import SCPClient
 from paramiko import SFTPClient
@@ -105,30 +105,33 @@ class SSHManager:
         except Exception as e:
             print(f"[SLICER TRACTO]Error during script execution: {e}")
 
-    def execute(self, subjectName, algo, approxMaskPathFilePath, fodfFilePath):
+    def execute(self, subjectName, algo, folderPath):
         start_time = time.time()  # Start the timer at the beginning of the function
         self.connect()
 
         # Remote paths
-        remoteFodfFilePath = self.remoteInputFolder + "/sample_fodf.nii"
-        remoteApproxMaskPathFilePath = self.remoteInputFolder + "/sample_approx_mask.nii"
-
-        # Upload FODF file
-        print("Uploading FODF file...")
-        upload_start_time = time.time()
-        # self.upload_file(local_path=fodfFilePath, remote_path=remoteFodfFilePath)
-        upload_end_time = time.time()
-        print(f"Time taken to upload FODF file: {upload_end_time - upload_start_time:.2f} seconds")
-
-        # Upload Approximate Mask file
-        print("Uploading Approximate Mask file...")
-        upload_start_time = time.time()
-        # self.upload_file(local_path=approxMaskPathFilePath, remote_path=remoteApproxMaskPathFilePath)
-        upload_end_time = time.time()
-        print(f"Time taken to upload Approximate Mask file: {upload_end_time - upload_start_time:.2f} seconds")
-
         # Execute algorithm if 'algo1' is selected
-        if algo == 'algo1':
+        if algo == 'dipy':
+            fodfFilePath, approxMaskPathFilePath = self.getDipyInputs(folderPath=folderPath)
+            
+            remoteFodfFilePath = self.remoteInputFolder + "/sample_fodf.nii"
+            remoteApproxMaskPathFilePath = self.remoteInputFolder + "/sample_approx_mask.nii"
+
+            # Upload FODF file
+            print("Uploading FODF file...")
+            upload_start_time = time.time()
+            self.upload_file(local_path=fodfFilePath, remote_path=remoteFodfFilePath)
+            upload_end_time = time.time()
+            print(f"Time taken to upload FODF file: {upload_end_time - upload_start_time:.2f} seconds")
+
+            # Upload Approximate Mask file
+            print("Uploading Approximate Mask file...")
+            upload_start_time = time.time()
+            self.upload_file(local_path=approxMaskPathFilePath, remote_path=remoteApproxMaskPathFilePath)
+            upload_end_time = time.time()
+            print(f"Time taken to upload Approximate Mask file: {upload_end_time - upload_start_time:.2f} seconds")
+
+        
             localAlgoPath = os.path.join(self.algoFolderPath, "algo1.py")
             remoteAlgoPath = self.remoteScriptsFolder + "/script.py"
             
@@ -143,6 +146,10 @@ class SSHManager:
             self.run_file(remote_path=remoteAlgoPath)
             run_end_time = time.time()
             print(f"Time taken to execute algorithm: {run_end_time - run_start_time:.2f} seconds")
+        
+        elif algo == "PFT":
+            hardiFName, hardiBvalFName, hardiBvecFName, FPveCsf, FPveGm, FPveWm, BundleMask  = self.getPFTInputs
+            pass
 
         # Define paths for seeding mask and trk files
         localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
@@ -168,24 +175,59 @@ class SSHManager:
         end_time = time.time()
         print(f"Total time taken: {end_time - start_time:.2f} seconds")
 
+    
+    def getDipyInputs(self, folderPath):
+        fodf_path = None
+        mask_path = None
 
-    # def execute(self, subjectName, algo, approxMaskPathFilePath, fodfFilePath):
-    #     self.connect()
-    #     remoteFodfFilePath = self.remoteInputFolder+"/sample_fodf.nii"
-    #     remoteApproxMaskPathFilePath = self.remoteInputFolder+"/sample_approx_mask.nii"
+        # Iterate through all files in the folder
+        for file_name in os.listdir(folderPath):
+            file_path = os.path.join(folderPath, file_name)
 
-    #     self.upload_file(local_path=fodfFilePath, remote_path=remoteFodfFilePath)
-    #     self.upload_file(local_path=approxMaskPathFilePath, remote_path=remoteApproxMaskPathFilePath)
-    #     if algo == 'algo1':
-    #         localAlgoPath = os.path.join(self.algoFolderPath, "algo1.py")
-    #         remoteAlgoPath = self.remoteScriptsFolder+"/script.py"
-    #         self.upload_file(local_path=localAlgoPath, remote_path=remoteAlgoPath)
-    #         self.run_file(remote_path=remoteAlgoPath)
+            # Check if the current file is a .nii file
+            if file_name.endswith("fodf.nii"):
+                fodf_path = file_path
+            elif file_name.endswith("approximated_mask.nii"):
+                mask_path = file_path
 
-    #     localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", "{subjectName}_seeding_mask.nii")
-    #     localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", "{subjectName}_trk.trk")
-    #     remoteSeddingMaskPath = self.remoteOutputFolder+"/sample_seeding_mask.nii"
-    #     remoteTrkPath = self.remoteOutputFolder+"/sample_trk.nii"
+            # Stop searching if both files are found
+            if fodf_path and mask_path:
+                break
+        if fodf_path and mask_path:
+            print("[SLICER TRACTO] FODF and MASK file found")
+        
+        return fodf_path, mask_path
 
-    #     self.download_file(local_path=localSeddingMaskPath, remote_path=remoteSeddingMaskPath)
-    #     self.download_file(local_path=localTrkPath, remote_path=remoteTrkPath)
+    def getPFTInputs(self, folderPath):
+        hardiFName = None
+        hardiBvalFName = None
+        hardiBvecFName = None
+        FPveCsf = None
+        FPveGm = None
+        FPveWm = None
+        BundleMask = None
+        for file_name in os.listdir(folderPath):
+                file_path = os.path.join(folderPath, file_name)
+
+                # Check if the current file is a .nii file
+                if file_name.endswith("__dwi.nii.gz"):
+                    hardiFName = file_path
+                elif file_name.endswith("__dwi.bval"):
+                    hardiBvalFName = file_path
+                elif file_name.endswith("__dwi.bvec"):
+                    hardiBvecFName = file_path
+                elif file_name.endswith("_pve_0.nii.gz"):
+                    FPveCsf = file_path
+                elif file_name.endswith("_pve_1.nii.gz"):
+                    FPveGm = file_path
+                elif file_name.endswith("_pve_2.nii.gz"):
+                    FPveWm = file_path
+                elif file_name.endswith("_aligned.nii.gz"):
+                    BundleMask = file_path
+            
+        if hardiFName == None or hardiBvalFName == None or hardiBvecFName == None or FPveCsf == None or FPveGm == None or FPveWm == None or BundleMask == None:
+            print("[SLICER TRACTO] one of the file not found")
+        else:
+            print("[SLICER TRACTO] Files Found")
+        return hardiFName, hardiBvalFName, hardiBvecFName, FPveCsf, FPveGm, FPveWm, BundleMask        
+    
