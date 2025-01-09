@@ -18,10 +18,11 @@ from dipy.tracking.local_tracking import (LocalTracking,
                                           ParticleFilteringTracking)
 from dipy.tracking.streamline import Streamlines
 from dipy.tracking import utils
-from dipy.viz import window, actor, colormap, has_fury
+from dipy.viz  import has_fury
+# from dipy.viz import window, actor, colormap, has_fury
 import nibabel as nib
 import os
-OUTPUT_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Output")
+OUTPUT_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "Output")
 SEEDING_MASK_FOLDER_PATH: str = os.path.join(OUTPUT_FOLDER_PATH, "SeedingMask")
 TRKS_FOLDER_PATH: str = os.path.join(OUTPUT_FOLDER_PATH, "TRKS")
 os.makedirs(SEEDING_MASK_FOLDER_PATH, exist_ok=True)
@@ -30,19 +31,6 @@ os.makedirs(TRKS_FOLDER_PATH, exist_ok=True)
 
 
 interactive = False
-    # HARDI_FNAME = '/datasets/TractoInferno-ds003900/derivatives/testset/sub-1006/dwi/sub-1006__dwi.nii.gz'
-    # HARDI_BVAL_FNAME = '/datasets/TractoInferno-ds003900/derivatives/testset/sub-1006/dwi/sub-1006__dwi.bval'
-    # HARDI_BVEC_FNAME = '/datasets/TractoInferno-ds003900/derivatives/testset/sub-1006/dwi/sub-1006__dwi.bvec'
-
-
-
-    # F_PVE_CSF = '/datasets/pft/pve/sub-1006/bet_pve_0.nii.gz'
-    # F_PVE_GM = '/datasets/pft/pve/sub-1006/bet_pve_1.nii.gz'
-    # F_PVE_WM = '/datasets/pft/pve/sub-1006/bet_pve_2.nii.gz'
-
-    # BUNDLE_MASK = '/datasets/TractoInferno-ds003900/pop_avg-aligned-masks/PYT_L/sub-1006_aligned.nii.gz'
-# output_trk_path = "pyt_l_pft.trk"
-
 
 def run(HARDI_FNAME, HARDI_BVAL_FNAME, HARDI_BVEC_FNAME, F_PVE_CSF, F_PVE_GM, F_PVE_WM, BUNDLE_MASK, subjectName):
 

@@ -1,5 +1,5 @@
-from SSHManager.SSHManager import SSHManager
-from LocalManager.LocalManager import LocalManager
+from ComputationManager.SSHManager.SSHManager import SSHManager
+from ComputationManager.LocalManager.LocalManager import LocalManager
 
 class ComputationManager:
     def __init__(self):

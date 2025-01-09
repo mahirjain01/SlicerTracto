@@ -18,7 +18,8 @@ from dipy.tracking.local_tracking import (LocalTracking,
                                           ParticleFilteringTracking)
 from dipy.tracking.streamline import Streamlines
 from dipy.tracking import utils
-from dipy.viz import window, actor, colormap, has_fury
+from dipy.viz  import has_fury
+# from dipy.viz import window, actor, colormap, has_fury
 import nibabel as nib
 import os
 OUTPUT_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Output")
@@ -28,38 +29,21 @@ os.makedirs(INPUT_FOLDER_PATH, exist_ok=True)
 
 
 interactive = False
-    # HARDI_FNAME = '/datasets/TractoInferno-ds003900/derivatives/testset/sub-1006/dwi/sub-1006__dwi.nii.gz'
-    # HARDI_BVAL_FNAME = '/datasets/TractoInferno-ds003900/derivatives/testset/sub-1006/dwi/sub-1006__dwi.bval'
-    # HARDI_BVEC_FNAME = '/datasets/TractoInferno-ds003900/derivatives/testset/sub-1006/dwi/sub-1006__dwi.bvec'
-
-
-
-    # F_PVE_CSF = '/datasets/pft/pve/sub-1006/bet_pve_0.nii.gz'
-    # F_PVE_GM = '/datasets/pft/pve/sub-1006/bet_pve_1.nii.gz'
-    # F_PVE_WM = '/datasets/pft/pve/sub-1006/bet_pve_2.nii.gz'
-
-    # BUNDLE_MASK = '/datasets/TractoInferno-ds003900/pop_avg-aligned-masks/PYT_L/sub-1006_aligned.nii.gz'
-# output_trk_path = "pyt_l_pft.trk"
-
 
 def run(HARDI_FNAME, HARDI_BVAL_FNAME, HARDI_BVEC_FNAME, F_PVE_CSF, F_PVE_GM, F_PVE_WM, BUNDLE_MASK, subjectName):
 
-    trkFileName = f"/{subjectName}_trk.trk"
+    trkFileName = "/sample_trk.trk"
     output_trk_path = os.path.join(OUTPUT_FOLDER_PATH+trkFileName)
 
-    seeding_mask_file_path = OUTPUT_FOLDER_PATH+f"/{subjectName}_seeding_mask.nii"
+    seeding_mask_file_path = OUTPUT_FOLDER_PATH+f"/sample_seeding_mask.nii"
     
     data, affine, hardi_img = load_nifti(HARDI_FNAME, return_img=True)
     bvals, bvecs = read_bvals_bvecs(HARDI_BVAL_FNAME, HARDI_BVEC_FNAME)
     gtab = gradient_table(bvals, bvecs)
 
-
     pve_csf_data = load_nifti_data(F_PVE_CSF)
     pve_gm_data = load_nifti_data(F_PVE_GM)
     pve_wm_data, _, voxel_size = load_nifti(F_PVE_WM, return_voxsize=True)
-
-
-
 
     shape = data.shape[:-1]
 
@@ -71,17 +55,11 @@ def run(HARDI_FNAME, HARDI_BVAL_FNAME, HARDI_BVEC_FNAME, F_PVE_CSF, F_PVE_GM, F_
                                                 max_angle=20.,
                                                 sphere=default_sphere)
 
-
-
     seed_mask0 = load_nifti_data(BUNDLE_MASK)
     seed_mask = (seed_mask0 > 0)
     seed_mask[pve_wm_data < 0.5] = 0
 
-
     seeds = utils.seeds_from_mask(seed_mask, affine, density=2)
-
-
-
 
     # ACT uses a fixed threshold on the PVE maps. Both stopping criterion can be used in conjunction with PFT. In this example, we used CMC.
 
@@ -93,13 +71,7 @@ def run(HARDI_FNAME, HARDI_BVAL_FNAME, HARDI_BVEC_FNAME, F_PVE_CSF, F_PVE_GM, F_
                                                 pve_csf_data,
                                                 step_size=step_size,
                                                 average_voxel_size=voxel_size)
-
-
-
-
-
-
-
+    
 
     pft_streamline_gen = ParticleFilteringTracking(dg,
                                                 cmc_criterion,
@@ -116,41 +88,38 @@ def run(HARDI_FNAME, HARDI_BVAL_FNAME, HARDI_BVEC_FNAME, F_PVE_CSF, F_PVE_GM, F_
     streamlines = Streamlines(pft_streamline_gen)
     sft = StatefulTractogram(streamlines, hardi_img, Space.RASMM)
     save_trk(sft, output_trk_path)
+    """
+    if has_fury:
+        scene = window.Scene()
+        scene.add(actor.line(streamlines, colormap.line_colors(streamlines)))
+        window.record(scene, out_path='pyt_l_pft.png',
+                    size=(800, 800))
+        if interactive:
+            window.show(scene)
 
 
+    streamlines_gt = nib.streamlines.load(output_trk_path).streamlines
 
-    # if has_fury:
-    #     scene = window.Scene()
-    #     scene.add(actor.line(streamlines, colormap.line_colors(streamlines)))
-    #     window.record(scene, out_path='pyt_l_pft.png',
-    #                 size=(800, 800))
-    #     if interactive:
-    #         window.show(scene)
+    if has_fury:
+        scene = window.Scene()
+        scene.add(actor.line(streamlines_gt, colormap.line_colors(streamlines)))
+        window.record(scene, out_path='pyt_gt1006_pft.png',
+                    size=(800, 800))
+        if interactive:
+            window.show(scene)
 
+    streamlines_gt = nib.streamlines.load('/datasets/TractoInferno-ds003900/atlas/rbx_atlas/pop_average/PYT_L.trk').streamlines
 
-    # streamlines_gt = nib.streamlines.load(output_trk_path).streamlines
-
-    # if has_fury:
-    #     scene = window.Scene()
-    #     scene.add(actor.line(streamlines_gt, colormap.line_colors(streamlines)))
-    #     window.record(scene, out_path='pyt_gt1006_pft.png',
-    #                 size=(800, 800))
-    #     if interactive:
-    #         window.show(scene)
-
-    # streamlines_gt = nib.streamlines.load('/datasets/TractoInferno-ds003900/atlas/rbx_atlas/pop_average/PYT_L.trk').streamlines
-
-    # if has_fury:
-    #     scene = window.Scene()
-    #     scene.add(actor.line(streamlines_gt, colormap.line_colors(streamlines)))
-    #     window.record(scene, out_path='pyt_pop.png',
-    #                 size=(800, 800))
-    #     if interactive:
-    #         window.show(scene)
+    if has_fury:
+        scene = window.Scene()
+        scene.add(actor.line(streamlines_gt, colormap.line_colors(streamlines)))
+        window.record(scene, out_path='pyt_pop.png',
+                    size=(800, 800))
+        if interactive:
+            window.show(scene)
 
     seed_mask
-
-
+    """
 
     sub_affine = hardi_img.affine
     nifti_img = nib.Nifti1Image(seed_mask.astype(np.float32), sub_affine)
@@ -159,35 +128,14 @@ def run(HARDI_FNAME, HARDI_BVAL_FNAME, HARDI_BVEC_FNAME, F_PVE_CSF, F_PVE_GM, F_
 
 if __name__ == "__main__":
     subjectName="sample"
-    hardiFName = None
-    hardiBvalFName = None
-    hardiBvecFName = None
-    FPveCsf = None
-    FPveGm = None
-    FPveWm = None
-    BundleMask = None
-    for file_name in os.listdir(INPUT_FOLDER_PATH):
-            file_path = os.path.join(INPUT_FOLDER_PATH, file_name)
-
-            # Check if the current file is a .nii file
-            if file_name.endswith("__dwi.nii.gz"):
-                hardiFName = file_path
-            elif file_name.endswith("__dwi.bval"):
-                hardiBvalFName = file_path
-            elif file_name.endswith("__dwi.bvec"):
-                hardiBvecFName = file_path
-            elif file_name.endswith("_pve_0.nii.gz"):
-                FPveCsf = file_path
-            elif file_name.endswith("_pve_1.nii.gz"):
-                FPveGm = file_path
-            elif file_name.endswith("_pve_2.nii.gz"):
-                FPveWm = file_path
-            elif file_name.endswith("_aligned.nii.gz"):
-                BundleMask = file_path
-        
-    if hardiFName == None or hardiBvalFName == None or hardiBvecFName == None or FPveCsf == None or FPveGm == None or FPveWm == None or BundleMask == None:
-        print("[SLICER TRACTO] one of the file not found")
-    run(HARDI_FNAME=hardiFName, HARDI_BVAL_FNAME=hardiBvalFName, HARDI_BVEC_FNAME=hardiBvecFName, F_PVE_CSF=FPveCsf, F_PVE_GM=FPveGm, F_PVE_WM=FPveWm, BUNDLE_MASK=BundleMask, subjectName=subjectName)
+    hardiFName = os.path.join(INPUT_FOLDER_PATH, "sample___dwi.nii.gz")
+    hardiBvalFName = os.path.join(INPUT_FOLDER_PATH, "sample__dwi.bval")
+    hardiBvecFName = os.path.join(INPUT_FOLDER_PATH, "sample__dwi.bvec")
+    fPveCsf = os.path.join(INPUT_FOLDER_PATH, "sample_pve_0.nii.gz")
+    fPveGm = os.path.join(INPUT_FOLDER_PATH, "sample_pve_1.nii.gz")
+    fPveWm = os.path.join(INPUT_FOLDER_PATH, "sample_pve_2.nii.gz")
+    bundleMask = os.path.join(INPUT_FOLDER_PATH, "sample_aligned.nii.gz")
+    run(HARDI_FNAME=hardiFName, HARDI_BVAL_FNAME=hardiBvalFName, HARDI_BVEC_FNAME=hardiBvecFName, F_PVE_CSF=fPveCsf, F_PVE_GM=fPveGm, F_PVE_WM=fPveWm, BUNDLE_MASK=bundleMask, subjectName=subjectName)
     
 
 

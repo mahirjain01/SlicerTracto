@@ -1,14 +1,14 @@
 import paramiko
 import os
 import logging
-from SSHManager import configuration
-from SSHManager.Algos import dipyAlgo, pftAlgo
-from FileManager.FileManager import FileManager
+from ComputationManager.SSHManager import configuration
+from ComputationManager.SSHManager.Algos import dipyAlgo, pftAlgo
 from scp import SCPClient
 from paramiko import SFTPClient
 import time
+from ComputationManager.baseManager import BaseManager
 
-class SSHManager:
+class SSHManager(BaseManager):
     def __init__(self):
         """Establish the SSH connection."""
         self.hostname = configuration.hostname
@@ -18,7 +18,6 @@ class SSHManager:
         self.private_key = None
         self.client = None
         self.ssh_status = False
-        self.fileManager = FileManager()
         self.algoFolderPath = os.path.join(os.path.dirname(__file__), "Algos")
         self.remoteFolder = "/scratch/mahirj.scee.iitmandi/Gagan/SlicerTracto"
         self.remoteScriptsFolder = self.remoteFolder+"/Scripts"
@@ -39,9 +38,6 @@ class SSHManager:
             private_key = paramiko.Ed25519Key.from_private_key_file(self.private_key_path)  # Replace with RSAKey if using RSA
 
             # Use private key authentication
-            print(f"[SLICER TRACTO]Hostname: {self.hostname}")
-            print(f"[SLICER TRACTO]Port: {self.port}")
-            print(f"[SLICER TRACTO]username: {self.username}")
 
             self.ssh_client.connect(self.hostname, port=self.port, username=self.username, pkey=private_key)
 
@@ -108,10 +104,10 @@ class SSHManager:
     def execute(self, subjectName, algo, folderPath):
         start_time = time.time()  # Start the timer at the beginning of the function
         self.connect()
-
         # Remote paths
         # Execute algorithm if 'algo1' is selected
         if algo == 'dipy':
+            
             fodfFilePath, approxMaskPathFilePath = self.getDipyInputs(folderPath=folderPath)
             
             remoteFodfFilePath = self.remoteInputFolder + "/sample_fodf.nii"
@@ -132,8 +128,8 @@ class SSHManager:
             print(f"Time taken to upload Approximate Mask file: {upload_end_time - upload_start_time:.2f} seconds")
 
         
-            localAlgoPath = os.path.join(self.algoFolderPath, "algo1.py")
-            remoteAlgoPath = self.remoteScriptsFolder + "/script.py"
+            localAlgoPath = os.path.join(self.algoFolderPath, "dipyAlgo.py")
+            remoteAlgoPath = self.remoteScriptsFolder + "/dipyAlgo.py"
             
             print("Uploading algorithm script...")
             upload_start_time = time.time()
@@ -146,16 +142,38 @@ class SSHManager:
             self.run_file(remote_path=remoteAlgoPath)
             run_end_time = time.time()
             print(f"Time taken to execute algorithm: {run_end_time - run_start_time:.2f} seconds")
+            
         
         elif algo == "PFT":
-            hardiFName, hardiBvalFName, hardiBvecFName, FPveCsf, FPveGm, FPveWm, BundleMask  = self.getPFTInputs
-            pass
+            
+            localHardiFName, localHardiBvalFName, localHardiBvecFName, localFPveCsf, localFPveGm, localFPveWm, localBundleMask  = self.getPFTInputs(folderPath=folderPath)
+            remoteHardiFName = self.remoteInputFolder + "/sample___dwi.nii.gz"
+            remoteHardiBvalFName = self.remoteInputFolder + "/sample__dwi.bval"
+            remoteHardiBvecFName = self.remoteInputFolder + "/sample__dwi.bvec"
+            remoteFPveCsf = self.remoteInputFolder + "/sample_pve_0.nii.gz"
+            remoteFPveGm = self.remoteInputFolder + "/sample_pve_1.nii.gz"
+            remoteFPveWm = self.remoteInputFolder + "/sample_pve_2.nii.gz"
+            remoteBundleMask = self.remoteInputFolder + "/sample_aligned.nii.gz"
+            
+            self.upload_file(local_path=localHardiFName, remote_path=remoteHardiFName)
+            self.upload_file(local_path=localHardiBvalFName, remote_path=remoteHardiBvalFName)
+            self.upload_file(local_path=localHardiBvecFName, remote_path=remoteHardiBvecFName)
+            self.upload_file(local_path=localFPveCsf, remote_path=remoteFPveCsf)
+            self.upload_file(local_path=localFPveGm, remote_path=remoteFPveGm)
+            self.upload_file(local_path=localFPveWm, remote_path=remoteFPveWm)
+            self.upload_file(local_path=localBundleMask, remote_path=remoteBundleMask)
+
+            localAlgoPath = os.path.join(self.algoFolderPath, "pftAlgo.py")
+            remoteAlgoPath = self.remoteScriptsFolder + "/pftAlgo.py"
+            
+            self.upload_file(local_path=localAlgoPath, remote_path=remoteAlgoPath)
+            self.run_file(remote_path=remoteAlgoPath)
 
         # Define paths for seeding mask and trk files
         localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
         localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_trk.trk")
         remoteSeddingMaskPath = self.remoteOutputFolder + "/sample_seeding_mask.nii"
-        remoteTrkPath = self.remoteOutputFolder + "/sample_trk.trk"
+        remoteTrkPath = self.remoteOutputFolder + "/sample_trk.trk" 
 
         # Download Seeding Mask
         print("Downloading Seeding Mask...")
@@ -174,60 +192,3 @@ class SSHManager:
         # Print total time taken for the entire process
         end_time = time.time()
         print(f"Total time taken: {end_time - start_time:.2f} seconds")
-
-    
-    def getDipyInputs(self, folderPath):
-        fodf_path = None
-        mask_path = None
-
-        # Iterate through all files in the folder
-        for file_name in os.listdir(folderPath):
-            file_path = os.path.join(folderPath, file_name)
-
-            # Check if the current file is a .nii file
-            if file_name.endswith("fodf.nii"):
-                fodf_path = file_path
-            elif file_name.endswith("approximated_mask.nii"):
-                mask_path = file_path
-
-            # Stop searching if both files are found
-            if fodf_path and mask_path:
-                break
-        if fodf_path and mask_path:
-            print("[SLICER TRACTO] FODF and MASK file found")
-        
-        return fodf_path, mask_path
-
-    def getPFTInputs(self, folderPath):
-        hardiFName = None
-        hardiBvalFName = None
-        hardiBvecFName = None
-        FPveCsf = None
-        FPveGm = None
-        FPveWm = None
-        BundleMask = None
-        for file_name in os.listdir(folderPath):
-                file_path = os.path.join(folderPath, file_name)
-
-                # Check if the current file is a .nii file
-                if file_name.endswith("__dwi.nii.gz"):
-                    hardiFName = file_path
-                elif file_name.endswith("__dwi.bval"):
-                    hardiBvalFName = file_path
-                elif file_name.endswith("__dwi.bvec"):
-                    hardiBvecFName = file_path
-                elif file_name.endswith("_pve_0.nii.gz"):
-                    FPveCsf = file_path
-                elif file_name.endswith("_pve_1.nii.gz"):
-                    FPveGm = file_path
-                elif file_name.endswith("_pve_2.nii.gz"):
-                    FPveWm = file_path
-                elif file_name.endswith("_aligned.nii.gz"):
-                    BundleMask = file_path
-            
-        if hardiFName == None or hardiBvalFName == None or hardiBvecFName == None or FPveCsf == None or FPveGm == None or FPveWm == None or BundleMask == None:
-            print("[SLICER TRACTO] one of the file not found")
-        else:
-            print("[SLICER TRACTO] Files Found")
-        return hardiFName, hardiBvalFName, hardiBvecFName, FPveCsf, FPveGm, FPveWm, BundleMask        
-    
