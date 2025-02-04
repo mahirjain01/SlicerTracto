@@ -37,8 +37,7 @@ class DipyTools(ScriptedLoadableModule):
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
         self.parent.title = _("DipyTools") 
-        self.parent.categories = [translate("qSlicerAbstractCoreModule", "MTP")]
-        self.parent.contributors = ["Mahir Jain (IIT Mandi)"]  
+        self.parent.categories = [translate("qSlicerAbstractCoreModule", "SlicerTracto")]
         self.parent.helpText = _("""
 This is an example of scripted loadable module bundled in an extension.
 See more information in <a href="https://github.com/organization/projectname#DipyTools">module documentation</a>.

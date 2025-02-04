@@ -106,6 +106,20 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="ctkPathLineEdit" name="overlayFileTractography">
+        <property name="filters">
+         <set>ctkPathLineEdit::Drives|ctkPathLineEdit::Files|ctkPathLineEdit::NoDot|ctkPathLineEdit::NoDotDot|ctkPathLineEdit::Readable</set>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QPushButton" name="overlayButton">
+        <property name="text">
+         <string>Add Overlay</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

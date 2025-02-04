@@ -16,30 +16,31 @@ from slicer.parameterNodeWrapper import (
     WithinRange,
 )
 from slicer import vtkMRMLScalarVolumeNode
-from tractography import Tractography
-import qt
-from UIManager.TractographyUIManager import TractographyUIManager
+
+# Custom Imports
+from metricAnalysis import MetricAnalysis
+
 #
-# SecondModule
+# Metrics
 #
 
-class SecondModule(ScriptedLoadableModule):
+class Metrics(ScriptedLoadableModule):
     """Uses ScriptedLoadableModule base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = _("Tractography")  # TODO: make this more human readable by adding spaces
+        self.parent.title = _("Metrics")  # TODO: make this more human readable by adding spaces
         # TODO: set categories (folders where the module shows up in the module selector)
-        self.parent.categories = [translate("qSlicerAbstractCoreModule", "MTP")]
+        self.parent.categories = [translate("qSlicerAbstractCoreModule", "SlicerTracto")]
         self.parent.dependencies = []  # TODO: add here list of module names that this module requires
         self.parent.contributors = ["John Doe (AnyWare Corp.)"]  # TODO: replace with "Firstname Lastname (Organization)"
         # TODO: update with short description of the module and a link to online module documentation
         # _() function marks text as translatable to other languages
         self.parent.helpText = _("""
 This is an example of scripted loadable module bundled in an extension.
-See more information in <a href="https://github.com/organization/projectname#SecondModule">module documentation</a>.
+See more information in <a href="https://github.com/organization/projectname#Metrics">module documentation</a>.
 """)
         # TODO: replace with organization, grant and thanks
         self.parent.acknowledgementText = _("""
@@ -50,9 +51,11 @@ and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR0132
         # Additional initialization step after application startup is complete
         slicer.app.connect("startupCompleted()", registerSampleData)
 
+
 #
 # Register sample data sets in Sample Data module
 #
+
 
 def registerSampleData():
     """Add data sets to Sample Data module."""
@@ -66,43 +69,43 @@ def registerSampleData():
     # To ensure that the source code repository remains small (can be downloaded and installed quickly)
     # it is recommended to store data sets that are larger than a few MB in a Github release.
 
-    # SecondModule1
+    # Metrics1
     SampleData.SampleDataLogic.registerCustomSampleDataSource(
         # Category and sample name displayed in Sample Data module
-        category="SecondModule",
-        sampleName="SecondModule1",
+        category="Metrics",
+        sampleName="Metrics1",
         # Thumbnail should have size of approximately 260x280 pixels and stored in Resources/Icons folder.
         # It can be created by Screen Capture module, "Capture all views" option enabled, "Number of images" set to "Single".
-        thumbnailFileName=os.path.join(iconsPath, "SecondModule1.png"),
+        thumbnailFileName=os.path.join(iconsPath, "Metrics1.png"),
         # Download URL and target file name
         uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
-        fileNames="SecondModule1.nrrd",
+        fileNames="Metrics1.nrrd",
         # Checksum to ensure file integrity. Can be computed by this command:
         #  import hashlib; print(hashlib.sha256(open(filename, "rb").read()).hexdigest())
         checksums="SHA256:998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
         # This node name will be used when the data set is loaded
-        nodeNames="SecondModule1",
+        nodeNames="Metrics1",
     )
 
-    # SecondModule2
+    # Metrics2
     SampleData.SampleDataLogic.registerCustomSampleDataSource(
         # Category and sample name displayed in Sample Data module
-        category="SecondModule",
-        sampleName="SecondModule2",
-        thumbnailFileName=os.path.join(iconsPath, "SecondModule2.png"),
+        category="Metrics",
+        sampleName="Metrics2",
+        thumbnailFileName=os.path.join(iconsPath, "Metrics2.png"),
         # Download URL and target file name
         uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
-        fileNames="SecondModule2.nrrd",
+        fileNames="Metrics2.nrrd",
         checksums="SHA256:1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
         # This node name will be used when the data set is loaded
-        nodeNames="SecondModule2",
+        nodeNames="Metrics2",
     )
 
 #
-# SecondModuleWidget
+# MetricsWidget
 #
 
-class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+class MetricsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     """Uses ScriptedLoadableModuleWidget base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
@@ -111,9 +114,8 @@ class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         """Called when the user opens the module the first time and the widget is initialized."""
         ScriptedLoadableModuleWidget.__init__(self, parent)
         VTKObservationMixin.__init__(self)  # needed for parameter node observation
-        
         self._parameterNodeGuiTag = None
-        self._tractographyParams : Tractography = Tractography()
+        self._metricAnalysis : MetricAnalysis = MetricAnalysis()
 
     def setup(self) -> None:
         """Called when the user opens the module the first time and the widget is initialized."""
@@ -121,7 +123,7 @@ class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         # Load widget from .ui file (created by Qt Designer).
         # Additional widgets can be instantiated manually and added to self.layout.
-        uiWidget = slicer.util.loadUI(self.resourcePath("UI/SecondModule.ui"))
+        uiWidget = slicer.util.loadUI(self.resourcePath("UI/Metrics.ui"))
         self.layout.addWidget(uiWidget)
         self.ui = slicer.util.childWidgetVariables(uiWidget)
 
@@ -130,35 +132,48 @@ class SecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # "setMRMLScene(vtkMRMLScene*)" slot.
         uiWidget.setMRMLScene(slicer.mrmlScene)
 
-        # Create logic class. Logic implements all computations that should be possible to run
-        # in batch mode, without a graphical user interface.
-
         # Connections
-        self._tractographyCallbacks = TractographyUIManager(self.ui, self.layout, uiWidget)
 
-       
+        # These connections ensure that we update parameter node when scene is closed
+        self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
+        self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
-        # Make sure parameter node is initialized (needed for module reload)
+        # Buttons
+        self.ui.generateResultsButton.connect("clicked(bool)", self._metricAnalysis.generateMetrics)
+
+        # Paths
+        self.ui.predictedTrkPath.connect('currentPathChanged(QString)', self._metricAnalysis.setPredictedTrkPath)
+        self.ui.groundTruthTrkPath.connect('currentPathChanged(QString)', self._metricAnalysis.setGroundTruthTrkPath)
+
+        # Initializing Outputs Text
+        self.ui.diceScore.setText(f'Dice Score: -')
+        self.ui.overlapScore.setText(f'Overlap: -')
+        self.ui.overreachScore.setText(f'Overreach: -')
+
+        # passing UI parameter
+        self._metricAnalysis.ui = self.ui
+
 
     def cleanup(self) -> None:
         """Called when the application closes and the module widget is destroyed."""
         self.removeObservers()
 
     def enter(self) -> None:
-        pass
+        """Called each time the user opens this module."""
+        # Make sure parameter node exists and observed
 
     def exit(self) -> None:
         pass
 
     def onSceneStartClose(self, caller, event) -> None:
         pass
-        
 
     def onSceneEndClose(self, caller, event) -> None:
-        """Called just after the scene is closed."""
-        # If this module is shown while the scene is closed then recreate a new parameter node immediately
-        if self.parent.isEntered:
-            self.initializeParameterNode()
+        pass
 
-   
+    
+
+    
+
+  
 

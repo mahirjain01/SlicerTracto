@@ -7,6 +7,7 @@ from vtk import vtkPolyDataReader
 import vtk
 from dipy.io.stateful_tractogram import Space
 import qt
+import numpy as np
 
 class TractographyUIManager:
     def __init__(self, ui, layout, uiWidget):
@@ -28,15 +29,19 @@ class TractographyUIManager:
         self.visualizationCheckboxes = []
         self.display_nodes = []
         self.index= 0
+        self.overlayFilePath = None
         
 
         # UI connections
         # Buttons
         self.ui.generateTrkButton.connect("clicked(bool)", self.generateTrk)
         self.ui.visualizeTrkButton.connect("clicked(bool)", self.visualizeTrk)
+        self.ui.overlayButton.connect("clicked(bool)", self.displayOverlayFile)
+
 
         # Paths
         self.ui.InputFolderTractography.connect('currentPathChanged(QString)', self.setInputFolderPath)
+        self.ui.overlayFileTractography.connect('currentPathChanged(QString)', self.setOverlayPath)
 
         # Text
         
@@ -123,7 +128,6 @@ class TractographyUIManager:
         display_node.SetColor(0, 1, 0)  
         display_node.SetOpacity(1.0)  
         self.display_nodes.append(display_node)
-
         slicer.app.applicationLogic().GetSelectionNode().SetReferenceActiveVolumeID(streamline_node.GetID())
         slicer.app.applicationLogic().PropagateVolumeSelection()
         slicer.app.layoutManager().resetThreeDViews()   
@@ -183,7 +187,61 @@ class TractographyUIManager:
         writer.Write()
 
         print(f"[SLICER TRACTO]Wrote streamlines to {writer.GetFileName()}")
-          
+    
+
+    def setOverlayPath(self, path:str):
+        if not os.path.isfile(path):
+            print("[SLICER TRACTO] Input path is not a file.")
+            return
+    
+        valid_extensions = {".nii", ".nii.gz"}
+        if any(path.endswith(ext) for ext in valid_extensions):
+            self.overlayFilePath = path
+            print(f"[SLICER TRACTO] overlay file path set to {path}")
         
+        print("[SLICER TRACTO] Input file is not nifti.")
+
+    def displayOverlayFile(self):
+        if self.overlayFilePath == None:
+            print("[SLICER TRACTO] Select File")
+        # Load the NIfTI file as a volume
+        volume_node = slicer.util.loadVolume(self.overlayFilePath)
+
+        identity_matrix = np.eye(3)  # 3x3 Identity matrix for RAS
+
+        # Convert the identity matrix to a vtk matrix
+        vtk_matrix = slicer.vtkMatrix4x4()
+        for i in range(3):
+            for j in range(3):
+                vtk_matrix.SetElement(i, j, identity_matrix[i][j])
+
+        # Set the direction matrix to the identity matrix (for example, to fix RAS orientation)
+        volume_node.SetIJKToRASDirections(vtk_matrix)
+
+        # if volume_node is None:
+        #     slicer.util.errorDisplay("Failed to load NIfTI file.")
+        #     return
+
+        # # Optionally, you can set the view to 3D
+        # slicer.app.processEvents()  # Ensure the UI updates
+        # slicer.app.viewers()[0].resetFocalPoint()
+
+        # # You can also adjust display settings (like color map, etc.) here
+        # # Example: changing the color map
+        # volume_node.GetDisplayNode().SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey")
+
+        # Add the volume to the scene if it's not already added
+        slicer.mrmlScene.AddNode(volume_node)
+        
+        # Save the current view
+        current_camera_position = slicer.app.layoutManager().threeDWidget(0).threeDView().cameraPosition()
+
+        # Center the volume (reset camera)
+        slicer.app.layoutManager().threeDWidget(0).threeDView().resetFocalPoint()
+
+        # Optionally, restore the previous camera position to prevent models from aligning
+        slicer.app.layoutManager().threeDWidget(0).threeDView().setCameraPosition(*current_camera_position)
+
+        print(f"Successfully loaded NIfTI file: {self.overlayFilePath}")
 
 

@@ -5,7 +5,9 @@ module_path = os.path.join(os.path.dirname(__file__), "Modules")
 if module_path not in sys.path:
     sys.path.append(module_path)
 from typing import Annotated, Optional
+
 import vtk
+
 import slicer
 from slicer.i18n import tr as _
 from slicer.i18n import translate
@@ -15,31 +17,33 @@ from slicer.parameterNodeWrapper import (
     parameterNodeWrapper,
     WithinRange,
 )
+
 from slicer import vtkMRMLScalarVolumeNode
-from generateFodf import GenerateFODF
+from segmentationModule import Segmentation
+
 
 #
-# FirstModule
+# Segment
 #
 
 
-class FirstModule(ScriptedLoadableModule):
+class Segment(ScriptedLoadableModule):
     """Uses ScriptedLoadableModule base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = _("Generate FODF")  # TODO: make this more human readable by adding spaces
+        self.parent.title = _("Segment")  # TODO: make this more human readable by adding spaces
         # TODO: set categories (folders where the module shows up in the module selector)
-        self.parent.categories = [translate("qSlicerAbstractCoreModule", "MTP")]
+        self.parent.categories = [translate("qSlicerAbstractCoreModule", "SlicerTracto")]
         self.parent.dependencies = []  # TODO: add here list of module names that this module requires
         self.parent.contributors = ["John Doe (AnyWare Corp.)"]  # TODO: replace with "Firstname Lastname (Organization)"
         # TODO: update with short description of the module and a link to online module documentation
         # _() function marks text as translatable to other languages
         self.parent.helpText = _("""
 This is an example of scripted loadable module bundled in an extension.
-See more information in <a href="https://github.com/organization/projectname#FirstModule">module documentation</a>.
+See more information in <a href="https://github.com/organization/projectname#Segment">module documentation</a>.
 """)
         # TODO: replace with organization, grant and thanks
         self.parent.acknowledgementText = _("""
@@ -68,69 +72,44 @@ def registerSampleData():
     # To ensure that the source code repository remains small (can be downloaded and installed quickly)
     # it is recommended to store data sets that are larger than a few MB in a Github release.
 
-    # FirstModule1
+    # Segment1
     SampleData.SampleDataLogic.registerCustomSampleDataSource(
         # Category and sample name displayed in Sample Data module
-        category="FirstModule",
-        sampleName="FirstModule1",
+        category="Segment",
+        sampleName="Segment1",
         # Thumbnail should have size of approximately 260x280 pixels and stored in Resources/Icons folder.
         # It can be created by Screen Capture module, "Capture all views" option enabled, "Number of images" set to "Single".
-        thumbnailFileName=os.path.join(iconsPath, "FirstModule1.png"),
+        thumbnailFileName=os.path.join(iconsPath, "Segment1.png"),
         # Download URL and target file name
         uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
-        fileNames="FirstModule1.nrrd",
+        fileNames="Segment1.nrrd",
         # Checksum to ensure file integrity. Can be computed by this command:
         #  import hashlib; print(hashlib.sha256(open(filename, "rb").read()).hexdigest())
         checksums="SHA256:998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
         # This node name will be used when the data set is loaded
-        nodeNames="FirstModule1",
+        nodeNames="Segment1",
     )
 
-    # FirstModule2
+    # Segment2
     SampleData.SampleDataLogic.registerCustomSampleDataSource(
         # Category and sample name displayed in Sample Data module
-        category="FirstModule",
-        sampleName="FirstModule2",
-        thumbnailFileName=os.path.join(iconsPath, "FirstModule2.png"),
+        category="Segment",
+        sampleName="Segment2",
+        thumbnailFileName=os.path.join(iconsPath, "Segment2.png"),
         # Download URL and target file name
         uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
-        fileNames="FirstModule2.nrrd",
+        fileNames="Segment2.nrrd",
         checksums="SHA256:1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
         # This node name will be used when the data set is loaded
-        nodeNames="FirstModule2",
+        nodeNames="Segment2",
     )
 
-
 #
-# FirstModuleParameterNode
-#
-
-
-@parameterNodeWrapper
-class FirstModuleParameterNode:
-    """
-    The parameters needed by module.
-
-    inputVolume - The volume to threshold.
-    imageThreshold - The value at which to threshold the input volume.
-    invertThreshold - If true, will invert the threshold.
-    thresholdedVolume - The output volume that will contain the thresholded volume.
-    invertedVolume - The output volume that will contain the inverted thresholded volume.
-    """
-
-    inputVolume: vtkMRMLScalarVolumeNode
-    imageThreshold: Annotated[float, WithinRange(-100, 500)] = 100
-    invertThreshold: bool = False
-    thresholdedVolume: vtkMRMLScalarVolumeNode
-    invertedVolume: vtkMRMLScalarVolumeNode
-
-
-#
-# FirstModuleWidget
+# SegmentWidget
 #
 
 
-class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+class SegmentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     """Uses ScriptedLoadableModuleWidget base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
@@ -140,7 +119,7 @@ class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         ScriptedLoadableModuleWidget.__init__(self, parent)
         VTKObservationMixin.__init__(self)  # needed for parameter node observation
         self._parameterNodeGuiTag = None
-        self._generateFodfParams : GenerateFODF = GenerateFODF()
+        self._segmentationParams : Segmentation = Segmentation()
 
     def setup(self) -> None:
         """Called when the user opens the module the first time and the widget is initialized."""
@@ -148,7 +127,7 @@ class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         # Load widget from .ui file (created by Qt Designer).
         # Additional widgets can be instantiated manually and added to self.layout.
-        uiWidget = slicer.util.loadUI(self.resourcePath("UI/FirstModule.ui"))
+        uiWidget = slicer.util.loadUI(self.resourcePath("UI/Segment.ui"))
         self.layout.addWidget(uiWidget)
         self.ui = slicer.util.childWidgetVariables(uiWidget)
 
@@ -157,7 +136,6 @@ class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # "setMRMLScene(vtkMRMLScene*)" slot.
         uiWidget.setMRMLScene(slicer.mrmlScene)
 
-
         # Connections
 
         # These connections ensure that we update parameter node when scene is closed
@@ -165,19 +143,19 @@ class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
         # Buttons
-        self.ui.generateFodfButton.connect("clicked(bool)", self._generateFodfParams.generateFodf)
-        self.ui.visualizeFodfButton.connect("clicked(bool)", self._generateFodfParams.visualizeFodf)
+        self.ui.segmentationButton_Segmentation.connect("clicked(bool)", self._segmentationParams.segmentTrk)
+        self.ui.visualizeTrks_Segmentation.connect("clicked(bool)", self._segmentationParams.visualizeSegmentation)
 
-        # Paths
-        self.ui.whiteMaskBiftiPath.connect('currentPathChanged(QString)', self._generateFodfParams.setWhiteMaskBiftiPath)
-        self.ui.diffusionNiftiPath.connect('currentPathChanged(QString)', self._generateFodfParams.setDiffusionNiftiPath)
-        self.ui.bvalsPath.connect('currentPathChanged(QString)', self._generateFodfParams.setBvalsPath)
-        self.ui.bvecsPath.connect('currentPathChanged(QString)', self._generateFodfParams.setBvecsPath)
-        self.ui.fodfPath.connect('currentPathChanged(QString)', self._generateFodfParams.setFodfPath)
-
-        self._generateFodfParams.outputText = self.ui.outputText
+        self.ui.trkPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_trkPath)
+        self.ui.segmentedTrkFolderPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_segmentedTrkFolderPath)
 
 
+        self._segmentationParams.outputText = self.ui.outputText_Segmenatation
+        self.ui.threasholdInput.valueChanged.connect(self._segmentationParams.set_threshold)
+
+        
+
+       
 
     def cleanup(self) -> None:
         """Called when the application closes and the module widget is destroyed."""
@@ -194,3 +172,5 @@ class FirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     def onSceneEndClose(self, caller, event) -> None:
         pass
+
+    
