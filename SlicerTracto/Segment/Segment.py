@@ -19,8 +19,7 @@ from slicer.parameterNodeWrapper import (
 )
 
 from slicer import vtkMRMLScalarVolumeNode
-from segmentationModule import Segmentation
-
+from SegmentUIManager.segmentUIManager import SegmentUIManager
 
 #
 # Segment
@@ -119,7 +118,6 @@ class SegmentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         ScriptedLoadableModuleWidget.__init__(self, parent)
         VTKObservationMixin.__init__(self)  # needed for parameter node observation
         self._parameterNodeGuiTag = None
-        self._segmentationParams : Segmentation = Segmentation()
 
     def setup(self) -> None:
         """Called when the user opens the module the first time and the widget is initialized."""
@@ -142,18 +140,7 @@ class SegmentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
-        # Buttons
-        self.ui.segmentationButton_Segmentation.connect("clicked(bool)", self._segmentationParams.segmentTrk)
-        self.ui.visualizeTrks_Segmentation.connect("clicked(bool)", self._segmentationParams.visualizeSegmentation)
-
-        self.ui.trkPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_trkPath)
-        self.ui.segmentedTrkFolderPath_Segmentation.connect('currentPathChanged(QString)', self._segmentationParams.set_segmentedTrkFolderPath)
-
-
-        self._segmentationParams.outputText = self.ui.outputText_Segmenatation
-        self.ui.threasholdInput.valueChanged.connect(self._segmentationParams.set_threshold)
-
-        
+        self._segmentCallbacks = SegmentUIManager(self.ui, uiWidget)
 
        
 

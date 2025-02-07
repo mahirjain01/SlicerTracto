@@ -13,7 +13,6 @@ class TractographyUIManager:
     def __init__(self, ui, layout, uiWidget):
         self.inputFolder = None
         self.ui = ui
-        self.layout = layout
         self.uiWidget = uiWidget
         self.computationManager = ComputationManager()
         self.computationMethod = "Local"
@@ -49,13 +48,7 @@ class TractographyUIManager:
         self.ui.selectComputationMethod.currentIndexChanged.connect(self.setComputationMethod)
         self.ui.selectAlgorithmTractography.currentIndexChanged.connect(self.setAlgo)
         self.ui.selectTrks.currentIndexChanged.connect(self.setTrk)
-        # self.checkboxLayout = qt.QHBoxLayout()
-        # self.uiWidget.verticalLayout.addLayout(self.checkboxLayout)
         
-
-        
-        #Output Box
-        # self._tractographyParams.outputText = self.ui.outputTextTractography
         self._loadTrks()
     
     def generateTrk(self):
@@ -140,7 +133,6 @@ class TractographyUIManager:
             new_checkbox = qt.QCheckBox(name)
             new_checkbox.setChecked(True)
             self.visualizationCheckboxes.append(name)
-            # Add the checkbox to the layout
             self.uiWidget.verticalLayout.verticalLayout_2.addWidget(new_checkbox)
             new_checkbox.stateChanged.connect(lambda state: self.onCheckboxStateChanged(index=index, state=state))
 

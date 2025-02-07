@@ -1,12 +1,11 @@
 import paramiko
 import os
 import logging
-from ComputationManager.SSHManager import configuration
-from ComputationManager.SSHManager.Algos import dipyAlgo, pftAlgo
+from SegmentComputationManager.SSHManager import configuration
 from scp import SCPClient
 from paramiko import SFTPClient
 import time
-from ComputationManager.baseManager import BaseManager
+from SegmentComputationManager.baseManager import BaseManager
 
 class SSHManager(BaseManager):
     def __init__(self):
@@ -101,7 +100,7 @@ class SSHManager(BaseManager):
         except Exception as e:
             print(f"[SLICER TRACTO]Error during script execution: {e}")
 
-    def execute(self, subjectName, algo, folderPath):
+    def execute(self, algo, folderPath):
         start_time = time.time()  # Start the timer at the beginning of the function
         self.connect()
         # Remote paths

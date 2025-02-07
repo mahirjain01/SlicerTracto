@@ -25,12 +25,11 @@ include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
 # Extension modules
-add_subdirectory(FirstModule)
-add_subdirectory(SecondModule)
-add_subdirectory(ThirdModule)
-add_subdirectory(segmentation)
+add_subdirectory(Fodf)
+add_subdirectory(Tracts)
+add_subdirectory(Segments)
+add_subdirectory(Metrics)
 add_subdirectory(DipyTools)
-add_subdirectory(FourthModule)
 
 ## NEXT_MODULE
 
