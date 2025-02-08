@@ -18,7 +18,7 @@ class SSHManager(BaseManager):
         self.client = None
         self.ssh_status = False
         self.algoFolderPath = os.path.join(os.path.dirname(__file__), "Algos")
-        self.remoteFolder = "/scratch/mahirj.scee.iitmandi/Gagan/SlicerTracto"
+        self.remoteFolder = "/scratch/mahirj.scee.iitmandi/Gagan/SlicerTracto/Segment"
         self.remoteScriptsFolder = self.remoteFolder+"/Scripts"
         self.remoteInputFolder = self.remoteFolder+"/Input"
         self.remoteOutputFolder = self.remoteFolder+"/Output"
@@ -78,6 +78,29 @@ class SSHManager(BaseManager):
         except Exception as e:
             print(f"[SLICER TRACTO]Error during download: {e}")
     
+    def download_all_files(self, local_folder, remote_folder):
+        try:
+            scp = SCPClient(self.ssh_client.get_transport())
+            
+            # Ensure the local folder exists
+            if not os.path.exists(local_folder):
+                os.makedirs(local_folder)
+            
+            # List all files in the remote directory
+            stdin, stdout, stderr = self.ssh_client.exec_command(f'ls -p "{remote_folder}" | grep -v /')
+            files = stdout.read().decode().split()
+            
+            for file in files:
+                remote_path = f"{remote_folder}/{file}"
+                local_path = f"{local_folder}/{file}"
+                print(f"[SLICER TRACTO] Downloading {remote_path} to {local_path}")
+                scp.get(remote_path, local_path)
+            
+            scp.close()
+            print("[SLICER TRACTO] All files downloaded successfully")
+        except Exception as e:
+            print(f"[SLICER TRACTO] Error during download: {e}")
+
     def run_file(self, remote_path):
         try:
             # Activate conda environment if specified
@@ -100,35 +123,41 @@ class SSHManager(BaseManager):
         except Exception as e:
             print(f"[SLICER TRACTO]Error during script execution: {e}")
 
-    def execute(self, algo, folderPath):
+    def execute(self, algo, trkPath, segmentedTrkFolderPath):
         start_time = time.time()  # Start the timer at the beginning of the function
         self.connect()
+
+        remoteTrkPath = self.remoteInputFolder + "/sample.trk"
+        remoteSegmentedTrkFolderPath = self.remoteInputFolder + "/SegmentTrks"
+
+        # Upload FODF file
+        print("Uploading FODF file...")
+        upload_start_time = time.time()
+        self.upload_file(local_path=trkPath, remote_path=remoteTrkPath)
+        upload_end_time = time.time()
+        print(f"Time taken to upload TRK file: {upload_end_time - upload_start_time:.2f} seconds")
+    
         # Remote paths
         # Execute algorithm if 'algo1' is selected
-        if algo == 'dipy':
+        if algo == 'QuickBundles':
+            localAlgoPath = os.path.join(self.algoFolderPath, "quickBundles.py")
+            remoteAlgoPath = self.remoteScriptsFolder + "/quickBundles.py"
             
-            fodfFilePath, approxMaskPathFilePath = self.getDipyInputs(folderPath=folderPath)
-            
-            remoteFodfFilePath = self.remoteInputFolder + "/sample_fodf.nii"
-            remoteApproxMaskPathFilePath = self.remoteInputFolder + "/sample_approx_mask.nii"
-
-            # Upload FODF file
-            print("Uploading FODF file...")
+            print("Uploading algorithm script...")
             upload_start_time = time.time()
-            self.upload_file(local_path=fodfFilePath, remote_path=remoteFodfFilePath)
+            self.upload_file(local_path=localAlgoPath, remote_path=remoteAlgoPath)
             upload_end_time = time.time()
-            print(f"Time taken to upload FODF file: {upload_end_time - upload_start_time:.2f} seconds")
+            print(f"Time taken to upload algorithm script: {upload_end_time - upload_start_time:.2f} seconds")
 
-            # Upload Approximate Mask file
-            print("Uploading Approximate Mask file...")
-            upload_start_time = time.time()
-            self.upload_file(local_path=approxMaskPathFilePath, remote_path=remoteApproxMaskPathFilePath)
-            upload_end_time = time.time()
-            print(f"Time taken to upload Approximate Mask file: {upload_end_time - upload_start_time:.2f} seconds")
-
+            print("Running algorithm script...")
+            run_start_time = time.time()
+            self.run_file(remote_path=remoteAlgoPath)
+            run_end_time = time.time()
+            print(f"Time taken to execute algorithm: {run_end_time - run_start_time:.2f} seconds")
         
-            localAlgoPath = os.path.join(self.algoFolderPath, "dipyAlgo.py")
-            remoteAlgoPath = self.remoteScriptsFolder + "/dipyAlgo.py"
+        elif algo == 'QuickBundlesX':
+            localAlgoPath = os.path.join(self.algoFolderPath, "quickBundles.py")
+            remoteAlgoPath = self.remoteScriptsFolder + "/quickBundlesX.py"
             
             print("Uploading algorithm script...")
             upload_start_time = time.time()
@@ -143,50 +172,14 @@ class SSHManager(BaseManager):
             print(f"Time taken to execute algorithm: {run_end_time - run_start_time:.2f} seconds")
             
         
-        elif algo == "PFT":
-            
-            localHardiFName, localHardiBvalFName, localHardiBvecFName, localFPveCsf, localFPveGm, localFPveWm, localBundleMask  = self.getPFTInputs(folderPath=folderPath)
-            remoteHardiFName = self.remoteInputFolder + "/sample___dwi.nii.gz"
-            remoteHardiBvalFName = self.remoteInputFolder + "/sample__dwi.bval"
-            remoteHardiBvecFName = self.remoteInputFolder + "/sample__dwi.bvec"
-            remoteFPveCsf = self.remoteInputFolder + "/sample_pve_0.nii.gz"
-            remoteFPveGm = self.remoteInputFolder + "/sample_pve_1.nii.gz"
-            remoteFPveWm = self.remoteInputFolder + "/sample_pve_2.nii.gz"
-            remoteBundleMask = self.remoteInputFolder + "/sample_aligned.nii.gz"
-            
-            self.upload_file(local_path=localHardiFName, remote_path=remoteHardiFName)
-            self.upload_file(local_path=localHardiBvalFName, remote_path=remoteHardiBvalFName)
-            self.upload_file(local_path=localHardiBvecFName, remote_path=remoteHardiBvecFName)
-            self.upload_file(local_path=localFPveCsf, remote_path=remoteFPveCsf)
-            self.upload_file(local_path=localFPveGm, remote_path=remoteFPveGm)
-            self.upload_file(local_path=localFPveWm, remote_path=remoteFPveWm)
-            self.upload_file(local_path=localBundleMask, remote_path=remoteBundleMask)
-
-            localAlgoPath = os.path.join(self.algoFolderPath, "pftAlgo.py")
-            remoteAlgoPath = self.remoteScriptsFolder + "/pftAlgo.py"
-            
-            self.upload_file(local_path=localAlgoPath, remote_path=remoteAlgoPath)
-            self.run_file(remote_path=remoteAlgoPath)
-
         # Define paths for seeding mask and trk files
-        localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
-        localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_trk.trk")
-        remoteSeddingMaskPath = self.remoteOutputFolder + "/sample_seeding_mask.nii"
-        remoteTrkPath = self.remoteOutputFolder + "/sample_trk.trk" 
-
+        
         # Download Seeding Mask
-        print("Downloading Seeding Mask...")
+        print("Downloading Trks And Vtks ...")
         download_start_time = time.time()
-        self.download_file(local_path=localSeddingMaskPath, remote_path=remoteSeddingMaskPath)
+        self.download_all_files(local_folder=segmentedTrkFolderPath, remote_folder=remoteSegmentedTrkFolderPath)
         download_end_time = time.time()
-        print(f"Time taken to download Seeding Mask: {download_end_time - download_start_time:.2f} seconds")
-
-        # Download TRK file
-        print("Downloading TRK file...")
-        download_start_time = time.time()
-        self.download_file(local_path=localTrkPath, remote_path=remoteTrkPath)
-        download_end_time = time.time()
-        print(f"Time taken to download TRK file: {download_end_time - download_start_time:.2f} seconds")
+        print(f"Time taken to download Trks And Vtks: {download_end_time - download_start_time:.2f} seconds")
 
         # Print total time taken for the entire process
         end_time = time.time()
