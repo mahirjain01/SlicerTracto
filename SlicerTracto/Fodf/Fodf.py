@@ -1,9 +1,6 @@
 import logging
 import os
 import sys
-module_path = os.path.join(os.path.dirname(__file__), "Modules")
-if module_path not in sys.path:
-    sys.path.append(module_path)
 from typing import Annotated, Optional
 import vtk
 import slicer
@@ -16,7 +13,7 @@ from slicer.parameterNodeWrapper import (
     WithinRange,
 )
 from slicer import vtkMRMLScalarVolumeNode
-from generateFodf import GenerateFODF
+from FodfUIManager.FodfUIManager import FodfUIManager
 
 #
 # Fodf
@@ -140,7 +137,7 @@ class FodfWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         ScriptedLoadableModuleWidget.__init__(self, parent)
         VTKObservationMixin.__init__(self)  # needed for parameter node observation
         self._parameterNodeGuiTag = None
-        self._generateFodfParams : GenerateFODF = GenerateFODF()
+        
 
     def setup(self) -> None:
         """Called when the user opens the module the first time and the widget is initialized."""
@@ -164,19 +161,7 @@ class FodfWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
-        # Buttons
-        self.ui.generateFodfButton.connect("clicked(bool)", self._generateFodfParams.generateFodf)
-        self.ui.visualizeFodfButton.connect("clicked(bool)", self._generateFodfParams.visualizeFodf)
-
-        # Paths
-        self.ui.whiteMaskBiftiPath.connect('currentPathChanged(QString)', self._generateFodfParams.setWhiteMaskBiftiPath)
-        self.ui.diffusionNiftiPath.connect('currentPathChanged(QString)', self._generateFodfParams.setDiffusionNiftiPath)
-        self.ui.bvalsPath.connect('currentPathChanged(QString)', self._generateFodfParams.setBvalsPath)
-        self.ui.bvecsPath.connect('currentPathChanged(QString)', self._generateFodfParams.setBvecsPath)
-        self.ui.fodfPath.connect('currentPathChanged(QString)', self._generateFodfParams.setFodfPath)
-
-        self._generateFodfParams.outputText = self.ui.outputText
-
+        self._fodfUIManager = FodfUIManager(self.ui, uiWidget=uiWidget)
 
 
     def cleanup(self) -> None:

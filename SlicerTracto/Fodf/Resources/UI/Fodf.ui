@@ -6,11 +6,32 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>325</width>
+    <width>372</width>
     <height>331</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Select Computation Method</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="selectComputationMethod">
+     <item>
+      <property name="text">
+       <string>Local</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>SSH</string>
+      </property>
+     </item>
+    </widget>
+   </item>
    <item>
     <widget class="ctkCollapsibleButton" name="inputsCollapsibleButton">
      <property name="text">
@@ -25,63 +46,49 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>White Mask Nifti</string>
+         <string>Select Computation Method</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="ctkPathLineEdit" name="whiteMaskBiftiPath"/>
+       <widget class="QComboBox" name="selectComputationMethod">
+        <item>
+         <property name="text">
+          <string>Scilpy Fodf Generation</string>
+         </property>
+        </item>
+       </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Diffusion Nifti</string>
+         <string>Folder Path</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="ctkPathLineEdit" name="diffusionNiftiPath"/>
+       <widget class="ctkPathLineEdit" name="inputFolderPath"/>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>BVALS.bvals</string>
+         <string>Folder to save FODF</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="ctkPathLineEdit" name="bvalsPath"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>BVECS.bvecs</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="ctkPathLineEdit" name="bvecsPath"/>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Path to Save FODF</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
        <widget class="ctkPathLineEdit" name="fodfPath"/>
       </item>
-      <item row="7" column="0">
+      <item row="4" column="0">
        <widget class="QPushButton" name="generateFodfButton">
         <property name="text">
          <string>Generate Fodf</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="4" column="1">
        <widget class="QPushButton" name="visualizeFodfButton">
         <property name="text">
          <string>Visualize FODF</string>
@@ -90,9 +97,6 @@
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <widget class="ctkFittedTextBrowser" name="outputText"/>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -115,11 +119,6 @@
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkFittedTextBrowser</class>
-   <extends>QTextBrowser</extends>
-   <header>ctkFittedTextBrowser.h</header>
   </customwidget>
   <customwidget>
    <class>ctkPathLineEdit</class>
