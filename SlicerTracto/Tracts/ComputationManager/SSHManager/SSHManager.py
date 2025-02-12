@@ -6,6 +6,8 @@ from scp import SCPClient
 from paramiko import SFTPClient
 import time
 from ComputationManager.baseManager import BaseManager
+from Algos.trlfAlgo import Tract_RLFormer  
+
 
 class SSHManager(BaseManager):
     def __init__(self):
@@ -168,6 +170,24 @@ class SSHManager(BaseManager):
             self.upload_file(local_path=localAlgoPath, remote_path=remoteAlgoPath)
             self.run_file(remote_path=remoteAlgoPath)
 
+        elif algo == "TRLF":
+
+            trlf_model_load_path, offline_trajectories, input_fodf_signal, seeding_mask, tracking_mask, bundle_mask, peaks, reference_file_fa = self.getTRLFInputs(folderPath=folderPath)
+
+            tracker = Tract_RLFormer()
+
+            tracker.setTrlfModelPath(trlf_model_load_path)  
+            tracker.setOfflineTrajectoriesPath(offline_trajectories)  
+            tracker.setFodfPath(input_fodf_signal)  
+            tracker.setSeedingMaskPath(seeding_mask)  
+            tracker.setTrackingMaskPath(tracking_mask)  
+            tracker.setBundleMaskPath(bundle_mask)  
+            tracker.setPeaksPath(peaks)  
+            tracker.setReferenceFAPath(reference_file_fa)  
+            tracker.setOutputDirPath(os.path.join(self.localOutputFolder, f"{subjectName}_trk.trk"))  
+
+            tracker.runTracking()
+        
         # Define paths for seeding mask and trk files
         localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
         localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_trk.trk")
