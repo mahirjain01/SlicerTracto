@@ -35,7 +35,7 @@ class Tract_RLFormer:
         }
         self.remote_workspace = '/home/turing/tracking_workspace'
         self.conda_env = 'project_3_7'
-        self.local_results = Path('./results')
+        self.local_results = Path('/Users/mahir/Desktop/MTP/SlicerTracto/SlicerTracto/Tracts/Output')
 
     def _initialize_parameters(self):
         """Initialize all input parameters with default empty values"""
@@ -87,11 +87,12 @@ class Tract_RLFormer:
             self.parameters['reference_file_fa'] = str(path)
 
     def setOutputDirPath(self, path):
-        if Path(path).is_dir():
-            self.parameters['output_dir'] = str(path)
-            self.local_results = Path(path)
-        else:
-            self._log_error(f"Invalid output directory: {path}")
+        self.local_results.mkdir(exist_ok=True)
+        # if Path(path).is_dir():
+        #     self.parameters['output_dir'] = str(path)
+        #     self.local_results = Path(path)
+        # else:
+        #     self._log_error(f"Invalid output directory: {path}")
 
     # -------------------------------------------------------------------------
     # Main function triggered by UI
