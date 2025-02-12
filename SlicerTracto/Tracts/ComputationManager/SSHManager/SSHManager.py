@@ -143,7 +143,27 @@ class SSHManager(BaseManager):
             self.run_file(remote_path=remoteAlgoPath)
             run_end_time = time.time()
             print(f"Time taken to execute algorithm: {run_end_time - run_start_time:.2f} seconds")
-            
+
+            # Define paths for seeding mask and trk files
+            localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
+            localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_trk.trk")
+            remoteSeddingMaskPath = self.remoteOutputFolder + "/sample_seeding_mask.nii"
+            remoteTrkPath = self.remoteOutputFolder + "/sample_trk.trk" 
+
+            # Download Seeding Mask
+            print("Downloading Seeding Mask...")
+            download_start_time = time.time()
+            self.download_file(local_path=localSeddingMaskPath, remote_path=remoteSeddingMaskPath)
+            download_end_time = time.time()
+            print(f"Time taken to download Seeding Mask: {download_end_time - download_start_time:.2f} seconds")
+
+            # Download TRK file
+            print("Downloading TRK file...")
+            download_start_time = time.time()
+            self.download_file(local_path=localTrkPath, remote_path=remoteTrkPath)
+            download_end_time = time.time()
+            print(f"Time taken to download TRK file: {download_end_time - download_start_time:.2f} seconds")
+                
         
         elif algo == "PFT":
             
@@ -170,6 +190,26 @@ class SSHManager(BaseManager):
             self.upload_file(local_path=localAlgoPath, remote_path=remoteAlgoPath)
             self.run_file(remote_path=remoteAlgoPath)
 
+            # Define paths for seeding mask and trk files
+            localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
+            localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_trk.trk")
+            remoteSeddingMaskPath = self.remoteOutputFolder + "/sample_seeding_mask.nii"
+            remoteTrkPath = self.remoteOutputFolder + "/sample_trk.trk" 
+
+            # Download Seeding Mask
+            print("Downloading Seeding Mask...")
+            download_start_time = time.time()
+            self.download_file(local_path=localSeddingMaskPath, remote_path=remoteSeddingMaskPath)
+            download_end_time = time.time()
+            print(f"Time taken to download Seeding Mask: {download_end_time - download_start_time:.2f} seconds")
+
+            # Download TRK file
+            print("Downloading TRK file...")
+            download_start_time = time.time()
+            self.download_file(local_path=localTrkPath, remote_path=remoteTrkPath)
+            download_end_time = time.time()
+            print(f"Time taken to download TRK file: {download_end_time - download_start_time:.2f} seconds")
+
         elif algo == "TRLF":
 
             trlf_model_load_path, offline_trajectories, input_fodf_signal, seeding_mask, tracking_mask, bundle_mask, peaks, reference_file_fa = self.getTRLFInputs(folderPath=folderPath)
@@ -188,25 +228,6 @@ class SSHManager(BaseManager):
 
             tracker.runTracking()
         
-        # Define paths for seeding mask and trk files
-        localSeddingMaskPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_seeding_mask.nii")
-        localTrkPath = os.path.join(self.localOutputFolder, "SeedingMask", f"{subjectName}_trk.trk")
-        remoteSeddingMaskPath = self.remoteOutputFolder + "/sample_seeding_mask.nii"
-        remoteTrkPath = self.remoteOutputFolder + "/sample_trk.trk" 
-
-        # Download Seeding Mask
-        print("Downloading Seeding Mask...")
-        download_start_time = time.time()
-        self.download_file(local_path=localSeddingMaskPath, remote_path=remoteSeddingMaskPath)
-        download_end_time = time.time()
-        print(f"Time taken to download Seeding Mask: {download_end_time - download_start_time:.2f} seconds")
-
-        # Download TRK file
-        print("Downloading TRK file...")
-        download_start_time = time.time()
-        self.download_file(local_path=localTrkPath, remote_path=remoteTrkPath)
-        download_end_time = time.time()
-        print(f"Time taken to download TRK file: {download_end_time - download_start_time:.2f} seconds")
 
         # Print total time taken for the entire process
         end_time = time.time()

@@ -21,7 +21,7 @@ class TractographyUIManager:
         self.subjectName = None
 
         self.computationMethods = ["Local", "SSH"]
-        self.algos = ["dipy", "PFT"]
+        self.algos = ["dipy", "PFT", "TRLF"]
         self.trkPathList = []
         self.trkPath = None
         self.vtkFolderPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Output', 'VTKS')
