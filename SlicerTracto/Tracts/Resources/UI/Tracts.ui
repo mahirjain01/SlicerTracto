@@ -71,6 +71,11 @@
           <string>PFT</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Tract RL Former</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="4" column="0" colspan="2">
@@ -127,16 +132,6 @@
     <layout class="QVBoxLayout" name="verticalLayout_2"/>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Status Bar</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="ctkFittedTextBrowser" name="outputTextTractography"/>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -157,11 +152,6 @@
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkFittedTextBrowser</class>
-   <extends>QTextBrowser</extends>
-   <header>ctkFittedTextBrowser.h</header>
   </customwidget>
   <customwidget>
    <class>ctkPathLineEdit</class>

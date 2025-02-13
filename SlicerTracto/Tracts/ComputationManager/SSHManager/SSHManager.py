@@ -6,7 +6,7 @@ from scp import SCPClient
 from paramiko import SFTPClient
 import time
 from ComputationManager.baseManager import BaseManager
-# from Algos.trlfAlgo import Tract_RLFormer  
+from ComputationManager.SSHManager.Algos.trlfAlgo import Tract_RLFormer
 
 
 class SSHManager(BaseManager):

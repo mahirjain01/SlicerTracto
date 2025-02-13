@@ -197,8 +197,7 @@ class Tract_RLFormer:
             self.outputConsole.append(f"[ERROR] {message}")
         else:
             print(f"[ERROR] {message}")
-
-    # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------
     # SSH / SCP methods
     # -------------------------------------------------------------------------
     
@@ -227,7 +226,6 @@ class Tract_RLFormer:
             self._log_error(f"SSH connection failed: {str(e)}")
             raise
 
-
     def transfer_files(self):
         """Transfer all required input files to the remote server"""
         remote_input_dir = f'{self.remote_workspace}/input'
@@ -249,7 +247,6 @@ class Tract_RLFormer:
 
             remote_path = f'{remote_input_dir}/{os.path.basename(local_path)}'
             self.scp.put(local_path, remote_path)
-
 
     def execute_tracking(self):
         """Execute the tracking command on the remote server"""
