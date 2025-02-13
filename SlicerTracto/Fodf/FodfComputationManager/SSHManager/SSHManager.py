@@ -116,25 +116,25 @@ class SSHManager(BaseManager):
 
             print("Uploading Diffusion File...")
             upload_start_time = time.time()
-            self.upload_file(local_path=diffusionPath, remote_path=self.remoteInputFolder + "/sample_dwi.nii")
+            self.upload_file(local_path=diffusionPath, remote_path=remoteDiffusionPath)
             upload_end_time = time.time()
             print(f"Time taken to upload Diffusion File: {upload_end_time - upload_start_time:.2f} seconds")
             
             print("Uploading White Matter Mask...")
             upload_start_time = time.time()
-            self.upload_file(local_path=whiteMaskPath, remote_path=self.remoteInputFolder + "/sample_wm.nii")
+            self.upload_file(local_path=whiteMaskPath, remote_path=remoteWhiteMaskPath)
             upload_end_time = time.time()
             print(f"Time taken to upload White Matter Mask: {upload_end_time - upload_start_time:.2f} seconds")
             
             print("Uploading Bval File...")
             upload_start_time = time.time()
-            self.upload_file(local_path=bvalPath, remote_path=self.remoteInputFolder + "/sample.bval")
+            self.upload_file(local_path=bvalPath, remote_path=remoteBvalPath)
             upload_end_time = time.time()
             print(f"Time taken to upload Bval File: {upload_end_time - upload_start_time:.2f} seconds")
             
             print("Uploading Bvec File...")
             upload_start_time = time.time()
-            self.upload_file(local_path=bvecPath, remote_path=self.remoteInputFolder + "/sample.bvec")
+            self.upload_file(local_path=bvecPath, remote_path=remoteBvecPath)
             upload_end_time = time.time()
             print(f"Time taken to upload Bvec File: {upload_end_time - upload_start_time:.2f} seconds")
 

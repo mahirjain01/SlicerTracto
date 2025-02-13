@@ -1,5 +1,5 @@
 import os
-import sys
+
 from scripts.scil_frf_ssst import main as scil_frf_ssst_main
 from scripts.scil_fodf_ssst import main as scil_fodf_ssst_main
 from scripts.scil_dti_metrics import main as scil_dti_metrics_main
@@ -15,7 +15,7 @@ class GenerateFODF:
         self.outputFolderPath: str = outputFolderPath
         self.subjectName: str = subjectName
 
-    def generateFodf(self):
+    def run(self):
         try:
             # Ensure output directory exists
             os.makedirs(self.outputFolderPath, exist_ok=True)

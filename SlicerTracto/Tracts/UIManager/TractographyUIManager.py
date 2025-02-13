@@ -209,20 +209,6 @@ class TractographyUIManager:
 
         # Set the direction matrix to the identity matrix (for example, to fix RAS orientation)
         volume_node.SetIJKToRASDirections(vtk_matrix)
-
-        # if volume_node is None:
-        #     slicer.util.errorDisplay("Failed to load NIfTI file.")
-        #     return
-
-        # # Optionally, you can set the view to 3D
-        # slicer.app.processEvents()  # Ensure the UI updates
-        # slicer.app.viewers()[0].resetFocalPoint()
-
-        # # You can also adjust display settings (like color map, etc.) here
-        # # Example: changing the color map
-        # volume_node.GetDisplayNode().SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey")
-
-        # Add the volume to the scene if it's not already added
         slicer.mrmlScene.AddNode(volume_node)
         
         # Save the current view

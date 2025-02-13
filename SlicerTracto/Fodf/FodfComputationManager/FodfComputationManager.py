@@ -1,5 +1,13 @@
+import os
+import sys
+# Get the path to the scilpy folder and add to sys paths
+sibling_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scilpy'))
+if sibling_folder_path not in sys.path:
+    sys.path.append(sibling_folder_path)
+
 from FodfComputationManager.SSHManager.SSHManager import SSHManager
 from FodfComputationManager.LocalManager.LocalManager import LocalManager
+
 
 class FodfComputationManager:
     def __init__(self):

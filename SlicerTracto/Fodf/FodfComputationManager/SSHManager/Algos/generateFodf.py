@@ -15,7 +15,7 @@ class GenerateFODF:
         self.outputFolderPath: str = outputFolderPath
         self.subjectName: str = subjectName
 
-    def generateFodf(self):
+    def run(self):
         try:
             # Ensure output directory exists
             os.makedirs(self.outputFolderPath, exist_ok=True)
@@ -62,4 +62,5 @@ class GenerateFODF:
 
 if __name__ == "__main__":
     rootPath = "/scratch/mahirj.scee.iitmandi/Gagan/SlicerTracto/Fodf/Output"
-    generateFODF = GenerateFODF(subjectName="sample", diffusionPath=f"{rootPath}/sample_dwi.nii", whiteMaskPath=f"{rootPath}/sample_wm.nii", bvalPath=f"{rootPath}/sample.bval", bvecPath=f"{rootPath}/sample.bvec")
+    generateFODF = GenerateFODF(subjectName="sample", diffusionPath=f"{rootPath}/sample_dwi.nii", whiteMaskPath=f"{rootPath}/sample_wm.nii", bvalPath=f"{rootPath}/sample.bval", bvecPath=f"{rootPath}/sample.bvec", outputFolderPath="/scratch/mahirj.scee.iitmandi/Gagan/SlicerTracto/Fodf/Output")
+    generateFODF.run()
