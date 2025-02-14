@@ -8,7 +8,7 @@ __pycache__/
 **/Input/
 *.python
 
-./venv
+venv/
 
 *.nii.gz
 *.nii
