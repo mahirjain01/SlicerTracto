@@ -7,3 +7,8 @@ __pycache__/
 **/Output/
 **/Input/
 *.python
+
+./venv
+
+*.nii.gz
+*.nii
