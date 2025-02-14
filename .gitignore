@@ -12,3 +12,16 @@ venv/
 
 *.nii.gz
 *.nii
+
+
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+
+*.nii
+*.nii.gz
+*.npy
